@@ -1,29 +1,143 @@
-<!DOCTYPE html><html lang="ja"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Amazon.co.jp - キャンペーン結果</title> <style> body { margin:0; font-family: Arial, Helvetica, sans-serif; background:#eaeded; } /* Header */ .header { background:#131921; color:#fff; padding:10px 15px; display:flex; align-items:center; } .logo { font-weight:bold; font-size:20px; margin-right:20px; } .search { flex:1; } .search input { width:100%; padding:8px; border-radius:4px; border:none; }/* Container */ .container { max-width:900px; margin:20px auto; } .card { background:#fff; padding:25px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.15); }
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amazon.co.jp - キャンペーン結果</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #eaeded;
+    }
+    .header {
+      background: #131921;
+      color: #fff;
+      padding: 10px 15px;
+      display: flex;
+      align-items: center;
+    }
+    .logo {
+      font-weight: bold;
+      font-size: 20px;
+      margin-right: 20px;
+    }
+    .search {
+      flex: 1;
+    }
+    .search input {
+      width: 100%;
+      padding: 8px;
+      border-radius: 4px;
+      border: none;
+    }
+    .container {
+      max-width: 900px;
+      margin: 20px auto;
+    }
+    .card {
+      background: #fff;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    h1 {
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+    .badge {
+      background: #ffd814;
+      color: #111;
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      width: 100%;
+      margin-top: 15px;
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      background: #ffd814;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    #loading {
+      display: none;
+      margin-top: 20px;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 16px;
+    }
+    .small {
+      font-size: 12px;
+      color: #555;
+      margin-top: 10px;
+    }
+    .result-image {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      margin-top: 12px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">amazon</div>
+    <div class="search"><input placeholder="Amazon.co.jpで検索"></div>
+  </div>
 
-h1 { font-size:22px; margin-bottom:10px; }
-.badge { background:#ffd814; color:#111; display:inline-block; padding:4px 10px; border-radius:20px; font-size:12px; margin-bottom:10px; }
+  <div class="container">
+    <div class="card">
+      <div class="badge">特別キャンペーン</div>
+      <h1>お客様限定 抽選結果のご案内</h1>
+      <p>簡単な確認のため、お名前を入力してください。</p>
+      <input type="text" id="name" placeholder="お名前">
+      <button onclick="startLottery()">結果を確認する</button>
 
-input { width:100%; padding:10px; margin-top:10px; border:1px solid #ccc; border-radius:4px; }
-button { width:100%; margin-top:15px; padding:10px; border:none; border-radius:4px; background:#ffd814; cursor:pointer; font-weight:bold; }
+      <div id="loading">
+        <p>抽選結果を確認中...</p>
+        <p>⏳ サーバーと通信しています</p>
+      </div>
 
-#loading { display:none; margin-top:20px; }
-#result { margin-top:20px; font-size:16px; }
+      <div id="result"></div>
+      <div class="small">※本日中に受け取り手続きを完了してください</div>
+    </div>
+  </div>
 
-.small { font-size:12px; color:#555; margin-top:10px; }
+  <script>
+    function startLottery() {
+      const name = document.getElementById('name').value || "お客様";
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('result').innerHTML = "";
 
- </style> </head> <body> <div class="header"> <div class="logo">amazon</div> <div class="search"><input placeholder="Amazon.co.jpで検索"></div> </div> <div class="container"> <div class="card"> <div class="badge">特別キャンペーン</div> <h1>お客様限定 抽選結果のご案内</h1> <p>簡単な確認のため、お名前を入力してください。</p><input type="text" id="name" placeholder="お名前"> <button onclick="startLottery()">結果を確認する</button> <div id="loading"> <p>抽選結果を確認中...</p> <p>⏳ サーバーと通信しています</p> </div> <div id="result"></div> <div class="small">※本日中に受け取り手続きを完了してください</div> </div> </div> <script> function startLottery() { const name = document.getElementById('name').value || "お客様"; document.getElementById('loading').style.display = 'block'; document.getElementById('result').innerHTML = "";
+      setTimeout(() => {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('result').innerHTML =
+          `🎉 ${name}様、当選おめでとうございます！ 🎉<br><br>
+           Amazonギフト券 <strong>100,000円分</strong> が当選しました。<br>
+           <img src="91376f42-b36d-4f3d-bab2-794f2c4eec41.jpg" alt="当選画像" class="result-image"><br>
+           <button onclick="reveal()">受け取り手続きへ進む</button>`;
+      }, 3000);
+    }
 
-  setTimeout(() => {
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('result').innerHTML =
-      `🎉 ${name}様、当選おめでとうございます！ 🎉<br><br>\n          Amazonギフト券 <strong>100,000円分</strong> が当選しました。<br><br>\n          <button onclick="reveal()">受け取り手続きへ進む</button>`;
-  }, 3000);
-}
-
-function reveal() {
-  document.getElementById('result').innerHTML = "😜 エイプリルフールでした！！";
-}
-
-</script></body>
-
+    function reveal() {
+      document.getElementById('result').innerHTML =
+        `😜 エイプリルフールでした！！<br>
+         <img src="c6a344eb-48e9-41bf-9968-50603e9a4d07.jpg" alt="エイプリルフール画像" class="result-image">`;
+    }
+  </script>
+</body>
 </html>
