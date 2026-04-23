@@ -91,6 +91,27 @@
       margin-top: 12px;
       border-radius: 8px;
     }
+    .access-card {
+      background: #fff;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      margin-top: 20px;
+    }
+    .access-card h2 {
+      font-size: 18px;
+      margin-bottom: 5px;
+    }
+    .access-card p {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 12px;
+    }
+    .map-wrapper {
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #ddd;
+    }
   </style>
 </head>
 <body>
@@ -114,6 +135,26 @@
 
       <div id="result"></div>
       <div class="small">※本日中に受け取り手続きを完了してください</div>
+    </div>
+  </div>
+
+  <!-- アクセスマップ -->
+  <div class="container">
+    <div class="access-card">
+      <h2>📍 受け取り場所（アクセス）</h2>
+      <p>Amazon Japan G.K. &nbsp;〒141-0032 東京都品川区大崎1丁目2−12</p>
+      <div class="map-wrapper">
+        <iframe
+          src="https://www.google.com/maps?q=Amazon+Japan+G.K.,+1-2-12+Osaki,+Shinagawa,+Tokyo,+Japan&output=embed"
+          width="100%"
+          height="400"
+          style="border:0;display:block;"
+          allowfullscreen=""
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          title="Amazon Japan アクセスマップ">
+        </iframe>
+      </div>
     </div>
   </div>
 
