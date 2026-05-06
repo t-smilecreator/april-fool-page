@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AZ-104 Azure Administrator 問題集</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+header{background:linear-gradient(135deg,#0078d4,#005a9e);padding:24px;text-align:center}
+header h1{font-size:1.8rem;font-weight:700;color:#fff}
+header p{color:#bfdbfe;margin-top:6px}
+.controls{padding:16px 24px;background:#1e293b;display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-bottom:1px solid #334155}
+.filter-btn{padding:6px 14px;border:1px solid #475569;background:transparent;color:#94a3b8;border-radius:20px;cursor:pointer;font-size:.85rem;transition:all .2s}
+.filter-btn.active,.filter-btn:hover{background:#0078d4;border-color:#0078d4;color:#fff}
+.stats{margin-left:auto;font-size:.85rem;color:#64748b}
+.quiz-container{max-width:860px;margin:24px auto;padding:0 16px}
+.question-card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:24px;margin-bottom:20px;transition:border-color .2s}
+.question-card.correct{border-color:#22c55e}
+.question-card.incorrect{border-color:#ef4444}
+.q-header{display:flex;gap:10px;align-items:flex-start;margin-bottom:16px}
+.q-num{background:#0078d4;color:#fff;border-radius:6px;padding:2px 9px;font-size:.8rem;font-weight:700;white-space:nowrap}
+.q-cat{background:#334155;color:#94a3b8;border-radius:6px;padding:2px 9px;font-size:.75rem;white-space:nowrap}
+.q-text{font-size:1rem;line-height:1.6;color:#e2e8f0}
+.options{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.option{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border:1px solid #334155;border-radius:8px;cursor:pointer;transition:all .2s;background:#0f172a}
+.option:hover{border-color:#0078d4;background:#172036}
+.option.selected{border-color:#0078d4;background:#172554}
+.option.right{border-color:#22c55e;background:#052e16}
+.option.wrong{border-color:#ef4444;background:#2d0a0a}
+.option-key{font-weight:700;color:#0078d4;min-width:20px}
+.option.right .option-key{color:#22c55e}
+.option.wrong .option-key{color:#ef4444}
+.explanation{margin-top:14px;padding:12px 14px;background:#0f172a;border-left:3px solid #0078d4;border-radius:0 8px 8px 0;font-size:.88rem;line-height:1.6;color:#94a3b8;display:none}
+.explanation.show{display:block}
+.explanation strong{color:#38bdf8}
+.btn-check{margin-top:14px;padding:8px 20px;background:#0078d4;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.9rem;font-weight:600;transition:background .2s}
+.btn-check:hover{background:#005a9e}
+.btn-check:disabled{background:#334155;color:#64748b;cursor:default}
+.score-bar{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.score-num{font-size:2rem;font-weight:700;color:#0078d4}
+.score-label{color:#64748b;font-size:.9rem}
+.progress{flex:1;min-width:140px}
+.progress-bar{height:8px;background:#334155;border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#0078d4,#22c55e);border-radius:4px;transition:width .4s}
+.hidden{display:none}
+@media(max-width:600px){header h1{font-size:1.4rem}.question-card{padding:16px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>AZ-104 Azure Administrator 問題集</h1>
+  <p>全カテゴリ対応 ・ 日本語解説付き</p>
+</header>
+<div class="controls">
+  <button class="filter-btn active" data-cat="all">すべて</button>
+  <button class="filter-btn" data-cat="identity">ID・ガバナンス</button>
+  <button class="filter-btn" data-cat="storage">ストレージ</button>
+  <button class="filter-btn" data-cat="compute">コンピューティング</button>
+  <button class="filter-btn" data-cat="network">ネットワーキング</button>
+  <button class="filter-btn" data-cat="monitor">監視・バックアップ</button>
+  <span class="stats" id="stats">0 / 0 正解</span>
+</div>
+<div class="quiz-container">
+  <div class="score-bar">
+    <div>
+      <div class="score-num" id="score-num">0</div>
+      <div class="score-label">正解数</div>
+    </div>
+    <div>
+      <div class="score-num" id="total-num" style="color:#64748b">0</div>
+      <div class="score-label">回答済み</div>
+    </div>
+    <div class="progress">
+      <div style="font-size:.8rem;color:#64748b;margin-bottom:4px" id="pct-label">正答率 0%</div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+  </div>
+  <div id="quiz"></div>
+</div>
+<script>
+const questions = [
+/* ===== ID・ガバナンス ===== */
+{cat:"identity",q:"Azure RBACの組み込みロールで、リソースの読み取りのみが可能で、変更・削除・アクセス権付与はできないロールはどれですか？",opts:["Owner","Contributor","Reader","User Access Administrator"],ans:2,exp:"<strong>Reader</strong> はリソースの表示のみ可能。Ownerは全権限、Contributorは管理以外の全権限、User Access Administratorはアクセス管理のみ。"},
+{cat:"identity",q:"AZ-104の試験範囲において、Azureリソースへのアクセス管理を目的として特定のスコープでロールを割り当てる仕組みを何と呼びますか？",opts:["Azure Policy","RBAC（ロールベースのアクセス制御）","リソースロック","Azure Blueprints"],ans:1,exp:"<strong>RBAC</strong>（Role-Based Access Control）は、管理グループ・サブスクリプション・リソースグループ・リソースのスコープでロールを割り当て、アクセスを制御します。"},
+{cat:"identity",q:"Azure AD（Microsoft Entra ID）のカスタムロールを作成するために最低限必要な操作はどれですか？",opts:["PowerShellでNew-AzRoleDefinitionを実行","Azure PortalのAzure AD > ロールから作成","Azure PortalのIAM > カスタムロール作成 または PowerShell/CLIを使用","ARMテンプレートのみ対応"],ans:2,exp:"カスタムRBACロールは、Azure Portal（IAM > ロール > 作成）、PowerShell、Azure CLI、REST APIいずれでも作成可能です。"},
+{cat:"identity",q:"Azureの管理スコープで最上位に位置するのはどれですか？",opts:["サブスクリプション","リソースグループ","管理グループ","テナント（Azure AD）"],ans:2,exp:"階層は テナント → <strong>管理グループ</strong> → サブスクリプション → リソースグループ → リソース です。管理グループはサブスクリプションをまとめてポリシーやRBACを継承させる単位です。"},
+{cat:"identity",q:"Azure Policyの効果（effect）で、リソースの作成・更新を完全にブロックするものはどれですか？",opts:["Audit","Append","Deny","DeployIfNotExists"],ans:2,exp:"<strong>Deny</strong> はポリシーに準拠しないリソースの作成・更新をブロックします。Auditはログに記録するのみ、AppendはリソースにプロパティをAdd、DeployIfNotExistsは準拠リソースが存在しない場合にデプロイします。"},
+{cat:"identity",q:"Azureリソースに「ReadOnly」ロックを設定した場合、許可される操作はどれですか？",opts:["リソースの削除","リソースの設定変更","リソースの読み取り","新しいリソースの作成"],ans:2,exp:"<strong>ReadOnly</strong> ロックは読み取り（GET）のみ許可し、作成・更新・削除をブロックします。CanNotDeleteは読み取りと変更を許可し削除のみブロックします。"},
+{cat:"identity",q:"Azureのタグに関して正しい説明はどれですか？",opts:["タグは子リソースに自動継承される","タグはリソースグループから子リソースに自動継承されない","タグはサブスクリプション全体で共有される","タグは最大100個まで設定できる"],ans:1,exp:"Azureの<strong>タグは自動継承されません</strong>。各リソースに個別に設定が必要です（Azure Policyで継承を強制することは可能）。タグの上限はリソース・リソースグループあたり50個です。"},
+{cat:"identity",q:"オンプレミスのActive DirectoryユーザーをAzure ADに同期する際、パスワードハッシュをAzure ADに同期する方式はどれですか？",opts:["Azure AD Connect – パスワードハッシュ同期","Azure AD Connect – パススルー認証","Azure AD Federation（AD FS）","Azure AD B2C"],ans:0,exp:"<strong>パスワードハッシュ同期</strong>はオンプレミスのパスワードハッシュをAzure ADにコピーします。パススルー認証はオンプレミスADに認証を転送し、フェデレーションはAD FSで認証します。"},
+{cat:"identity",q:"Privileged Identity Management（PIM）の主な目的はどれですか？",opts:["多要素認証の強制","特権ロールの just-in-time（JIT）アクティベーション管理","カスタムRBACロールの作成","Azure Policyの自動適用"],ans:1,exp:"<strong>PIM</strong>（Privileged Identity Management）は、特権ロールを必要な時だけ一時的にアクティブ化するJITアクセスを提供し、過剰な特権保持を防ぎます。"},
+{cat:"identity",q:"Azure AD動的グループのメンバーシップはどのように決まりますか？",opts:["管理者が手動でメンバーを追加","ユーザーが自分でグループに参加申請","属性ベースのルール（例：department = 'Sales'）","グループ所有者が承認"],ans:2,exp:"<strong>動的グループ</strong>はユーザーまたはデバイスの属性（例：jobTitle、department、country）に基づいたルールでメンバーシップを自動管理します。"},
+{cat:"identity",q:"条件付きアクセスポリシーで「準拠デバイスからのアクセスのみ許可」を実現するために必要なサービスはどれですか？",opts:["Azure AD Identity Protection","Microsoft Intune（Endpoint Manager）","Azure Security Center","Azure Sentinel"],ans:1,exp:"デバイスコンプライアンスは <strong>Microsoft Intune</strong> で管理されます。条件付きアクセスポリシーはIntuneと連携し、準拠デバイスからのみアクセスを許可できます。"},
+{cat:"identity",q:"Azure ADのセルフサービスパスワードリセット（SSPR）を特定のグループにのみ有効化するには、どの設定を選択しますか？",opts:["[なし] を選択","[すべて] を選択","[選択済み] を選択して対象グループを指定","SSPRは全ユーザーにのみ有効化可能"],ans:2,exp:"SSPRの有効化オプションは「なし」「選択済み」「すべて」の3つです。<strong>選択済み</strong>を選ぶと特定のグループにのみSSPRを適用できます。"},
+{cat:"identity",q:"Azureサブスクリプションで使用できる管理グループの最大ネスト深さは何レベルですか？",opts:["3レベル","4レベル","6レベル","10レベル"],ans:2,exp:"管理グループは最大<strong>6レベル</strong>の深さ（ルート管理グループを除く）まで階層化できます。ルートを含めると7レベルです。"},
+{cat:"identity",q:"Azure RBACのロール割り当てで、親スコープで割り当てられたロールは子スコープに対してどう機能しますか？",opts:["子スコープには適用されない","子スコープに継承される","子スコープで個別に確認が必要","同じロールが存在する場合のみ継承"],ans:1,exp:"RBACは<strong>継承</strong>されます。管理グループで割り当てたロールはサブスクリプション・リソースグループ・リソースすべてに継承されます。"},
+/* ===== ストレージ ===== */
+{cat:"storage",q:"Azureストレージのレプリケーションオプションで、プライマリリージョンの3つのアベイラビリティゾーンにデータを同期コピーするものはどれですか？",opts:["LRS（ローカル冗長ストレージ）","GRS（地理冗長ストレージ）","ZRS（ゾーン冗長ストレージ）","GZRS（地理ゾーン冗長ストレージ）"],ans:2,exp:"<strong>ZRS</strong>（Zone-Redundant Storage）はプライマリリージョン内の3つのアベイラビリティゾーンにデータを同期コピーします。LRSは同一DC内3コピー、GRSはセカンダリリージョンにも非同期コピーします。"},
+{cat:"storage",q:"BLOBストレージのアーカイブ層にあるBLOBへのアクセス前に必要な操作はどれですか？",opts:["BLOBを削除して再作成","BLOBをホット層またはクール層にリハイドレート","ストレージアカウントのアクセス層を変更","プレミアムストレージアカウントにコピー"],ans:1,exp:"<strong>アーカイブ層</strong>のデータはオフラインです。アクセスするにはホット層またはクール層への<strong>リハイドレート</strong>（復元）が必要で、優先度によって数時間～15時間かかります。"},
+{cat:"storage",q:"Azure BLOBストレージの「ブロックBLOB」「追加BLOB」「ページBLOB」のうち、Azure仮想マシンのOSディスクやデータディスクに使用されるのはどれですか？",opts:["ブロックBLOB","追加BLOB","ページBLOB","どれでも使用可能"],ans:2,exp:"<strong>ページBLOB</strong>はランダムアクセス向けで、Azure VMのVHDファイル（OSディスク・データディスク）に使用されます。ブロックBLOBは大容量ファイル用、追加BLOBはログ追記用です。"},
+{cat:"storage",q:"Shared Access Signature（SAS）トークンで制御できないものはどれですか？",opts:["アクセスできるリソース","許可される操作（読み取り、書き込みなど）","有効期限","ストレージアカウントの名前変更"],ans:3,exp:"<strong>SASトークン</strong>はリソース範囲、許可操作（r/w/d）、有効期限、IPアドレス制限などを制御できますが、ストレージアカウント自体の<strong>名前変更はSASで制御できません</strong>（管理操作は別途権限が必要）。"},
+{cat:"storage",q:"Azure File Syncを使用する際、クラウド上のファイルはどこに保存されますか？",opts:["Azure Blob Storage","Azure Files（ファイル共有）","Azure Data Lake Storage","Azure NetApp Files"],ans:1,exp:"<strong>Azure File Sync</strong>はオンプレミスのWindowsファイルサーバーと <strong>Azure Files（SMBファイル共有）</strong> を同期します。ファイルはAzure Filesに保存され、必要に応じてクラウド階層化も可能です。"},
+{cat:"storage",q:"Azureストレージのライフサイクル管理ポリシーで自動化できる操作はどれですか？",opts:["BLOBを別のストレージアカウントに移動","アクセス層の変更（ホット→クール→アーカイブ）と削除","ストレージアカウントのレプリケーション変更","ファイル共有のバックアップ"],ans:1,exp:"<strong>ライフサイクル管理ポリシー</strong>では、最終更新日や最終アクセス日に基づきBLOBのアクセス層変更（ホット→クール→アーカイブ）と削除を自動化できます。"},
+{cat:"storage",q:"大量のデータをオフラインでAzureに転送するためのサービスで、輸送デバイスを物理的に送付する方法はどれですか？",opts:["Azure Import/Export（AzureデータボックスまたはData Box）","Azure Data Factory","AzCopy","Azure ExpressRoute"],ans:0,exp:"<strong>Azure Data Box</strong>（旧称: Azure Import/Export）は大容量データ（TBオーダー）をオフラインで転送するためにMicrosoftが物理デバイスを送付するサービスです。ネットワーク転送が困難な場合に使用します。"},
+{cat:"storage",q:"Azureストレージアカウントで不変（イミュータブル）ストレージを有効にした場合、データに関して正しいのはどれですか？",opts:["データは暗号化される","データは削除・変更できなくなる","データは自動的にアーカイブ層に移動する","データは別リージョンに自動コピーされる"],ans:1,exp:"<strong>不変ストレージ</strong>（WORM: Write Once Read Many）を有効にすると、保持ポリシーまたは法的保持の期間中はBLOBデータの<strong>削除・変更ができなくなります</strong>。コンプライアンス要件に使用されます。"},
+{cat:"storage",q:"Azureストレージアカウントのアクセスキーについて正しい説明はどれですか？",opts:["アクセスキーは読み取り専用アクセスを提供する","アクセスキーはストレージアカウント全体へのフルアクセスを提供する","アクセスキーは特定のBLOBコンテナにのみ有効","アクセスキーは7日後に自動失効する"],ans:1,exp:"<strong>アクセスキー</strong>はストレージアカウント全体への<strong>フルアクセス</strong>（管理操作を除く）を提供します。漏洩リスクがあるため、SASトークンやAzure AD認証の使用が推奨されます。定期的なローテーションも重要です。"},
+{cat:"storage",q:"Azure Premium BLOBストレージは主にどのユースケースに適していますか？",opts:["大量データのコールドストレージ","高スループット・低レイテンシが必要なワークロード","コスト最適化を重視したアーカイブ","地理冗長性が必要なバックアップ"],ans:1,exp:"<strong>Premium BLOBストレージ</strong>はSSDベースで、<strong>高スループット・低レイテンシ</strong>が必要なワークロード（AIトレーニング、リアルタイム分析など）に最適です。コストはStandardより高いです。"},
+/* ===== コンピューティング ===== */
+{cat:"compute",q:"Azureの可用性セット（Availability Set）で、ハードウェアの更新（再起動）からVMを保護するドメインはどれですか？",opts:["障害ドメイン（Fault Domain）","更新ドメイン（Update Domain）","アベイラビリティゾーン","近接配置グループ"],ans:1,exp:"<strong>更新ドメイン</strong>（Update Domain）は計画メンテナンス（ホストのOSパッチ適用）時に同時再起動されないVMグループです。最大20の更新ドメインを設定できます。障害ドメインは電源・ネットワークの物理障害からの保護です。"},
+{cat:"compute",q:"複数のAzure VMを異なるアベイラビリティゾーンに配置した場合に保証されるSLAはどれですか？",opts:["99.9%","99.95%","99.99%","100%"],ans:2,exp:"異なる<strong>アベイラビリティゾーン</strong>に2台以上のVMを配置すると、SLA <strong>99.99%</strong> が保証されます。可用性セット（99.95%）より高いSLAです。"},
+{cat:"compute",q:"Azure仮想マシンスケールセット（VMSS）の主な目的はどれですか？",opts:["単一VMの性能を最大化する","負荷に応じてVMインスタンスを自動スケール（増減）する","VMをグローバルに分散配置する","VMのバックアップを自動化する"],ans:1,exp:"<strong>仮想マシンスケールセット</strong>は、同一構成のVMを複数管理し、CPUやメモリ使用率などのメトリクスに基づいてインスタンス数を自動的にスケールアウト/インします。"},
+{cat:"compute",q:"Azure VMの管理ディスクで最高のIOPSとスループットを提供するディスク種類はどれですか？",opts:["Standard HDD","Standard SSD","Premium SSD","Ultra Disk"],ans:3,exp:"<strong>Ultra Disk</strong>はサブミリ秒レイテンシと最大160,000 IOPSを提供するAzureの最高性能ディスクです。SAP HANA、最上位層のDBなど極めて高い性能が必要なワークロード向けです。"},
+{cat:"compute",q:"Azure App Serviceで「Always On」機能が利用可能な最低のプランはどれですか？",opts:["Free（F1）","Shared（D1）","Basic（B1）","Standard（S1）"],ans:2,exp:"<strong>Always On</strong>（アイドルタイムアウト防止）は <strong>Basic（B1）以上</strong> で利用可能です。Free/Sharedプランはリソース共有でAlways Onが使えません。"},
+{cat:"compute",q:"Azure Virtual Machineで「Just-in-time（JIT）VMアクセス」を有効にする主な目的はどれですか？",opts:["VMのバックアップを自動化する","SSH/RDPポートを必要な時だけ一時的に開放し攻撃面を減らす","VMのパッチ適用を自動化する","複数VMの負荷分散を行う"],ans:1,exp:"<strong>JITアクセス</strong>（Microsoft Defender for Cloud）はSSH（22）やRDP（3389）などの管理ポートを通常時は閉じておき、アクセス要求時に指定時間・IPのみ一時的に開放します。これにより攻撃面を大幅に削減します。"},
+{cat:"compute",q:"Azure Bastionを使用する目的はどれですか？",opts:["VMのオートスケールを設定する","パブリックIPなしにブラウザからRDP/SSH接続をセキュアに提供する","VMのディスクバックアップを取得する","VMネットワークの帯域幅を増加させる"],ans:1,exp:"<strong>Azure Bastion</strong>はVNetにデプロイし、VMにパブリックIPを持たせることなく、<strong>Azure PortalのブラウザからRDP/SSHセッション</strong>を安全に提供します。"},
+{cat:"compute",q:"ARMテンプレートで既存のリソースに変更を加えずに同じテンプレートを再デプロイした場合、どうなりますか？",opts:["エラーになる","リソースが削除・再作成される","冪等性により変更なしで完了する","新しいリソースが追加作成される"],ans:2,exp:"ARMテンプレートは<strong>冪等（べきとう）</strong>です。現在の状態がテンプレートと一致している場合、再デプロイしても変更は行われません。これにより安全に繰り返しデプロイできます。"},
+{cat:"compute",q:"Azure Container Instances（ACI）の特徴として正しいのはどれですか？",opts:["Kubernetesクラスターの管理が必要","VMを事前にプロビジョニングする必要がある","サーバーレスでコンテナを実行でき、秒単位の課金","永続的なステートフルワークロードに最適"],ans:2,exp:"<strong>Azure Container Instances</strong>はサーバーレスでコンテナを実行でき、インフラ管理不要で秒単位課金です。単発タスク、CI/CDパイプライン、バースト処理などに適しています。長期のステートフルワークロードにはAKSが適しています。"},
+{cat:"compute",q:"Azure VMを別のリージョンに移動する場合、推奨されるサービスはどれですか？",opts:["Azure Backup","Azure Migrate または Azure Resource Mover","ARMテンプレートの再デプロイ","Azure Site Recovery"],ans:1,exp:"<strong>Azure Resource Mover</strong>（またはAzure Migrate）はAzureリソースをリージョン間で移動するためのサービスです。Azure Site Recoveryはディザスタリカバリ目的ですが、リージョン移動にも使用できます。"},
+{cat:"compute",q:"Azure VMの可用性セット（Availability Set）で設定できる最大の障害ドメイン数はいくつですか？",opts:["2","3","5","20"],ans:1,exp:"可用性セットの<strong>障害ドメイン</strong>は最大<strong>3</strong>です（リージョンによっては2）。更新ドメインは最大20まで設定できます。"},
+{cat:"compute",q:"Azure App Serviceのデプロイスロット機能が利用可能な最低のプランはどれですか？",opts:["Free","Basic","Standard","Premium"],ans:2,exp:"<strong>デプロイスロット</strong>（ステージング→本番へのスワップ）は <strong>Standard以上</strong> のApp Serviceプランで利用可能です。Standardでは最大5スロットが使用できます。"},
+/* ===== ネットワーキング ===== */
+{cat:"network",q:"ネットワークセキュリティグループ（NSG）のルールで、優先度の数値が低いほど処理順序はどうなりますか？",opts:["後で処理される（優先度低）","先に処理される（優先度高）","他のルールより無視される","NSGは処理順序を持たない"],ans:1,exp:"NSGの優先度は<strong>数値が小さいほど優先されます</strong>（100が最優先、4096が最低）。マッチした最初のルールが適用され、以降のルールは評価されません。"},
+{cat:"network",q:"Azure VNetピアリングの重要な特性として正しいのはどれですか？",opts:["ピアリングは推移的（A-B-Cピアリング時AとCも通信可）","ピアリングは非推移的（A-B、B-CでもAとCは通信不可）","ピアリングは同一リージョンのみ可能","ピアリングには同一アドレス空間が必要"],ans:1,exp:"VNetピアリングは<strong>非推移的</strong>です。A↔B、B↔CがピアリングされていてもA↔Cは通信できません。A↔Cを通信させるにはAとCを直接ピアリングするか、ハブ&スポーク構成でAzure Firewallを経由させます。"},
+{cat:"network",q:"Azureのサービスエンドポイント（Service Endpoint）とプライベートエンドポイント（Private Endpoint）の主な違いはどれですか？",opts:["サービスエンドポイントはパブリックIPを使用し、プライベートエンドポイントはプライベートIPをVNetに割り当てる","サービスエンドポイントはVMにのみ使用可能","プライベートエンドポイントはHTTPSを使用しない","両方同じ機能で価格のみ異なる"],ans:0,exp:"<strong>サービスエンドポイント</strong>はAzureサービスへのトラフィックをMicrosoftバックボーン経由にしますが、サービスのパブリックIPは維持されます。<strong>プライベートエンドポイント</strong>はサービスをVNet内のプライベートIPで公開し、完全にパブリックアクセスを遮断できます。"},
+{cat:"network",q:"Azure Load Balancer（Standard）とBasic Load Balancerの違いとして正しいのはどれですか？",opts:["BasicはアベイラビリティゾーンをサポートしStandardはしない","StandardはアベイラビリティゾーンをサポートしBasicはしない","BasicはSLAが99.99%でStandardは99.9%","両者に機能差はなくコストのみ異なる"],ans:1,exp:"<strong>Standard Load Balancer</strong>はアベイラビリティゾーンをサポートし、より高いSLA、HTTPS正常性プローブ、送信規則など高度な機能を提供します。Basic Load Balancerは無料ですが機能が限定的でゾーン冗長非対応です。"},
+{cat:"network",q:"Azure Application GatewayとAzure Load Balancerの主な違いはどれですか？",opts:["Application GatewayはL4（TCP/UDP）、Load BalancerはL7（HTTP/HTTPS）で動作","Application GatewayはL7（HTTP/HTTPS）でURLパスルーティングやSSL終端が可能、Load BalancerはL4","Application GatewayはVMのみサポート","Load BalancerはHTTPSのみサポート"],ans:1,exp:"<strong>Application Gateway</strong>はOSI L7（アプリケーション層）で動作し、URLパスベースのルーティング、SSL/TLS終端、WAF機能を提供します。<strong>Load Balancer</strong>はL4（トランスポート層）でTCP/UDP負荷分散を行います。"},
+{cat:"network",q:"Azure DNSプライベートゾーンをVNetに関連付ける際の「自動登録」を有効にすると何が起きますか？",opts:["VNet内のVMのDNSレコードが自動的にプライベートゾーンに登録される","パブリックDNSレコードが自動作成される","NSGルールが自動適用される","VNetピアリングが自動設定される"],ans:0,exp:"プライベートDNSゾーンへの「<strong>自動登録</strong>」を有効にすると、VNet内のVMが起動するたびにそのAレコードが自動的にプライベートDNSゾーンに登録・削除されます。"},
+{cat:"network",q:"ユーザー定義ルート（UDR）の主な使用目的はどれですか？",opts:["NSGルールの優先度を変更する","デフォルトのシステムルートを上書きしてトラフィックをNVAやAzure Firewallに転送する","VNetのアドレス空間を変更する","VNet間の帯域幅を制限する"],ans:1,exp:"<strong>UDR（User Defined Route）</strong>はルートテーブルで定義し、Azureのデフォルトシステムルートを上書きします。主にNVA（ネットワーク仮想アプライアンス）やAzure Firewallを経由させてすべてのトラフィックを検査するために使用します。"},
+{cat:"network",q:"Azure VPNゲートウェイのサイト間VPN接続で使用される標準プロトコルはどれですか？",opts:["SSL/TLS","OpenVPN","IPsec/IKE","L2TP"],ans:2,exp:"Azure VPNゲートウェイのサイト間VPNは <strong>IPsec/IKE</strong>（IKEv1またはIKEv2）プロトコルを使用します。オンプレミスのVPNデバイスと互換性のある暗号化設定を合わせる必要があります。"},
+{cat:"network",q:"ExpressRouteとサイト間VPNの主な違いはどれですか？",opts:["ExpressRouteはインターネット経由で接続する","ExpressRouteはMicrosoftのネットワークプロバイダー経由のプライベート専用線接続","VPNは帯域幅がExpressRouteより常に高い","ExpressRouteは設定が不要"],ans:1,exp:"<strong>ExpressRoute</strong>はインターネットを経由せず、通信キャリア（AT&T、Equinixなど）を通じてオンプレミスとAzureをプライベート専用線で接続します。より安定した帯域幅、低レイテンシ、高セキュリティを提供しますが、コストが高いです。"},
+{cat:"network",q:"NSGのデフォルト送信ルールで最も優先度が低く、すべての送信トラフィックを拒否するルール名はどれですか？",opts:["DenyAllInbound","DenyAllOutbound","AllowAzureLoadBalancerInBound","AllowVnetOutBound"],ans:1,exp:"NSGにはデフォルトで <strong>DenyAllOutbound</strong>（優先度65500）がありすべての送信を拒否しますが、その前に AllowInternetOutBound（65001）と AllowVnetOutBound（65000）があるためインターネットとVNet内への送信は許可されます。"},
+{cat:"network",q:"Azure Firewallで明示的に許可されていないすべての通信はどう処理されますか？",opts:["すべて許可される","すべて拒否される（デフォルト拒否）","ログのみ記録されて通過","管理者に承認要求が送られる"],ans:1,exp:"Azure Firewallは<strong>デフォルト拒否</strong>ポリシーです。明示的に許可ルール（アプリケーションルール・ネットワークルール・NATルール）を作成しない限り、すべてのトラフィックはブロックされます。"},
+{cat:"network",q:"Azure VNetで使用できないプライベートIPアドレス範囲はどれですか？（使用可能なRFC1918範囲を選択）",opts:["10.0.0.0/8","172.16.0.0/12","192.168.0.0/16","203.0.113.0/24"],ans:3,exp:"RFC1918プライベートアドレスは <strong>10.0.0.0/8、172.16.0.0/12、192.168.0.0/16</strong> です。203.0.113.0/24はドキュメント用パブリックアドレスでVNetでは使用できません。"},
+/* ===== 監視・バックアップ ===== */
+{cat:"monitor",q:"Azure Monitorで収集できる2種類のデータはどれですか？",opts:["ログとアラート","メトリクスとログ","スナップショットとメトリクス","トレースとバックアップ"],ans:1,exp:"Azure Monitorは <strong>メトリクス</strong>（数値型の時系列データ、例：CPU使用率）と <strong>ログ</strong>（構造化・非構造化イベントデータ、Log Analyticsに保存）の2種類のデータを収集します。"},
+{cat:"monitor",q:"Log Analytics ワークスペースで使用されるクエリ言語はどれですか？",opts:["SQL","KQL（Kusto Query Language）","GraphQL","SPARQL"],ans:1,exp:"Log Analyticsでは <strong>KQL（Kusto Query Language）</strong> を使用してログデータをクエリします。`SecurityEvent | where EventID == 4625 | summarize count() by Computer` のような構文です。"},
+{cat:"monitor",q:"Azure アラートが発火した際に自動的にアクション（メール送信、Webhook呼び出し、LogicApp起動など）を実行するために設定するものはどれですか？",opts:["診断設定","アクショングループ","Log Analyticsクエリ","Azure Advisor"],ans:1,exp:"<strong>アクショングループ</strong>はアラートが発火したときに実行するアクション（メール、SMS、音声、Azure Functions、Logic App、Webhookなど）をまとめた設定です。複数のアラートルールで共有できます。"},
+{cat:"monitor",q:"Azure Backupで仮想マシンのバックアップを格納するコンテナの種類はどれですか？",opts:["ストレージアカウント","Azure Data Box","Recovery Servicesコンテナー（Vault）","Azure Archive"],ans:2,exp:"Azure Backupは <strong>Recovery Servicesコンテナー</strong>（Recovery Services Vault）にバックアップデータを保存します。同コンテナーはAzure Site Recoveryのレプリケーションデータにも使用されます。"},
+{cat:"monitor",q:"Azure Site Recovery（ASR）の主な目的はどれですか？",opts:["日次バックアップの自動化","障害時にVMを別リージョンへフェールオーバーするディザスタリカバリ","ストレージコストの最適化","ネットワーク接続の冗長化"],ans:1,exp:"<strong>Azure Site Recovery</strong>はオンプレミスのVMやAzure VMを別のリージョンへ<strong>継続的にレプリケート</strong>し、障害時にフェールオーバーするディザスタリカバリ（DR）ソリューションです。"},
+{cat:"monitor",q:"Azure Advisorが提供する推奨事項のカテゴリに含まれないものはどれですか？",opts:["コスト","セキュリティ","信頼性（高可用性）","データベース最適化"],ans:3,exp:"<strong>Azure Advisor</strong>の推奨カテゴリは「コスト」「セキュリティ」「信頼性（高可用性）」「パフォーマンス」「オペレーショナルエクセレンス」の5つです。「データベース最適化」という独立カテゴリはありません（パフォーマンスに含まれます）。"},
+{cat:"monitor",q:"Azure Cost Managementで特定の月額支出上限を設定し、超過しそうな場合にメール通知を受け取るには何を設定しますか？",opts:["Azure Policy","アクショングループ","予算（Budget）アラート","Azure Advisor推奨事項"],ans:2,exp:"<strong>予算（Budget）</strong>はCost Managementで設定し、コストや使用量が閾値（例：予算の80%、100%、120%）に達したときにメール通知やアクショングループを起動できます。"},
+{cat:"monitor",q:"Azure Service Healthで「Azure Status」「Service Health」「Resource Health」の違いで正しいのはどれですか？",opts:["すべて同じ情報を表示する","Azure Statusはグローバル、Service Healthはサブスクリプション固有、Resource Healthは個別リソースの正常性","Service Healthはリソースグループのみ対象","Resource Healthはリージョン別の障害情報のみ"],ans:1,exp:"<strong>Azure Status</strong>はすべてのリージョン・サービスのグローバルな正常性。<strong>Service Health</strong>は自分のサブスクリプションに影響するイベントをフィルタ表示。<strong>Resource Health</strong>は特定リソース（VM、SQL DBなど）の個別正常性を表示します。"},
+{cat:"monitor",q:"Azure VMの診断データ（OSメトリクスやイベントログ）をAzure Monitorに収集するために有効にするものはどれですか？",opts:["Azure Security Center","Azure Diagnostics拡張機能（または Azure Monitor Agent）","Azure Backup","Network Watcher"],ans:1,exp:"VMのゲストOSレベルのメトリクスやWindowsイベントログ・Linuxのsyslogを収集するには、<strong>Azure Diagnostics拡張機能</strong>（または新しい <strong>Azure Monitor Agent</strong>）をVMにインストールします。"},
+];
+
+let current="all",answered={},correct_count=0,answered_count=0;
+
+function filtered(){return current==="all"?questions:questions.filter(q=>q.cat===current);}
+
+function catLabel(c){
+  return {identity:"ID・ガバナンス",storage:"ストレージ",compute:"コンピューティング",network:"ネットワーキング",monitor:"監視・バックアップ"}[c]||c;
+}
+
+function render(){
+  const qs=filtered();
+  let html="";
+  qs.forEach((q,i)=>{
+    const gidx=questions.indexOf(q);
+    const state=answered[gidx];
+    let cardCls="question-card";
+    if(state!==undefined) cardCls+=state===q.ans?" correct":" incorrect";
+    html+=`<div class="${cardCls}" id="card-${gidx}">
+      <div class="q-header">
+        <span class="q-num">Q${gidx+1}</span>
+        <span class="q-cat">${catLabel(q.cat)}</span>
+        <span class="q-text">${q.q}</span>
+      </div>
+      <div class="options">`;
+    q.opts.forEach((opt,oi)=>{
+      let cls="option";
+      if(state!==undefined){
+        if(oi===q.ans) cls+=" right";
+        else if(oi===state) cls+=" wrong";
+      }
+      html+=`<div class="${cls}" onclick="select(${gidx},${oi})" id="opt-${gidx}-${oi}">
+        <span class="option-key">${String.fromCharCode(65+oi)}.</span>
+        <span>${opt}</span>
+      </div>`;
+    });
+    html+=`</div>
+      <button class="btn-check" id="btn-${gidx}" onclick="check(${gidx})" ${state!==undefined?"disabled":""}>回答する</button>
+      <div class="explanation ${state!==undefined?"show":""}" id="exp-${gidx}">${q.explanation||"<strong>解説:</strong> "+q.exp}</div>
+    </div>`;
+  });
+  document.getElementById("quiz").innerHTML=html;
+  updateStats();
+}
+
+function select(gidx,oi){
+  if(answered[gidx]!==undefined) return;
+  document.querySelectorAll(`#card-${gidx} .option`).forEach(el=>el.classList.remove("selected"));
+  document.getElementById(`opt-${gidx}-${oi}`).classList.add("selected");
+  document.getElementById(`btn-${gidx}`)._sel=oi;
+}
+
+function check(gidx){
+  const btn=document.getElementById(`btn-${gidx}`);
+  const sel=btn._sel;
+  if(sel===undefined) return;
+  const q=questions[gidx];
+  answered[gidx]=sel;
+  if(sel===q.ans){correct_count++;document.getElementById(`card-${gidx}`).classList.add("correct");}
+  else{document.getElementById(`card-${gidx}`).classList.add("incorrect");}
+  answered_count++;
+  document.querySelectorAll(`#card-${gidx} .option`).forEach((el,oi)=>{
+    el.onclick=null;
+    if(oi===q.ans) el.classList.add("right");
+    else if(oi===sel) el.classList.add("wrong");
+  });
+  const exp=document.getElementById(`exp-${gidx}`);
+  exp.innerHTML="<strong>解説:</strong> "+q.exp;
+  exp.classList.add("show");
+  btn.disabled=true;
+  updateStats();
+}
+
+function updateStats(){
+  document.getElementById("score-num").textContent=correct_count;
+  document.getElementById("total-num").textContent=answered_count;
+  const pct=answered_count>0?Math.round(correct_count/answered_count*100):0;
+  document.getElementById("pct-label").textContent=`正答率 ${pct}%`;
+  document.getElementById("progress-fill").style.width=pct+"%";
+  document.getElementById("stats").textContent=`${correct_count} / ${answered_count} 正解`;
+}
+
+document.querySelectorAll(".filter-btn").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    current=btn.dataset.cat;
+    render();
+  });
+});
+
+render();
+</script>
+</body>
+</html>
