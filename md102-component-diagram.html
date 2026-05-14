@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MD102 コンポーネント図 - Endpoint Administrator</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;overflow-x:hidden}
+
+header{background:linear-gradient(135deg,#0078d4,#005a9e);padding:24px;text-align:center}
+header h1{font-size:1.8rem;font-weight:700;color:#fff}
+header p{color:#bfdbfe;margin-top:6px;font-size:.95rem}
+
+.legend{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;padding:16px 24px;background:#1e293b;border-bottom:1px solid #334155}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:.8rem;color:#94a3b8}
+.legend-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+
+.diagram-area{position:relative;width:100%;max-width:1200px;margin:0 auto;padding:30px 20px 60px}
+svg.connections{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1}
+
+.domain-section{margin-bottom:8px}
+.domain-label{font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#475569;margin-bottom:8px;padding-left:4px}
+
+.row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;position:relative;z-index:2}
+.row.center{justify-content:center}
+
+.node{
+  border-radius:10px;
+  padding:12px 16px;
+  cursor:pointer;
+  transition:all .25s;
+  border:2px solid transparent;
+  position:relative;
+  min-width:150px;
+  max-width:220px;
+  flex:1;
+}
+.node:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.node.active{border-color:#f8fafc;box-shadow:0 0 0 3px rgba(248,250,252,.2)}
+.node.faded{opacity:.25}
+
+.node-icon{font-size:1.4rem;margin-bottom:6px}
+.node-title{font-size:.88rem;font-weight:700;line-height:1.3}
+.node-sub{font-size:.72rem;color:#94a3b8;margin-top:3px;line-height:1.4}
+
+/* Domain colors */
+.identity  {background:#1e3a5f;border-color:#1e3a5f}
+.identity:hover{border-color:#0078d4}
+.identity.active{border-color:#0078d4}
+
+.deploy    {background:#1e3d2f;border-color:#1e3d2f}
+.deploy:hover{border-color:#22c55e}
+.deploy.active{border-color:#22c55e}
+
+.manage    {background:#3d1e3a;border-color:#3d1e3a}
+.manage:hover{border-color:#a855f7}
+.manage.active{border-color:#a855f7}
+
+.protect   {background:#3d2a1e;border-color:#3d2a1e}
+.protect:hover{border-color:#f97316}
+.protect.active{border-color:#f97316}
+
+.apps      {background:#2a1e3d;border-color:#2a1e3d}
+.apps:hover{border-color:#8b5cf6}
+.apps.active{border-color:#8b5cf6}
+
+/* Detail panel */
+.detail-panel{
+  position:fixed;bottom:0;left:0;right:0;
+  background:#1e293b;border-top:2px solid #0078d4;
+  padding:16px 24px;
+  transform:translateY(100%);
+  transition:transform .3s;
+  z-index:100;
+  max-height:280px;
+  overflow-y:auto;
+}
+.detail-panel.show{transform:translateY(0)}
+.detail-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.detail-title{font-size:1.1rem;font-weight:700;color:#f8fafc}
+.detail-domain{font-size:.75rem;padding:3px 10px;border-radius:20px;font-weight:600}
+.detail-close{background:none;border:none;color:#64748b;cursor:pointer;font-size:1.2rem;padding:0 4px}
+.detail-close:hover{color:#f8fafc}
+.detail-body{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.detail-desc{font-size:.88rem;color:#cbd5e1;line-height:1.6}
+.detail-links h4{font-size:.8rem;font-weight:700;color:#94a3b8;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em}
+.link-list{display:flex;flex-wrap:wrap;gap:6px}
+.link-tag{background:#334155;color:#e2e8f0;border-radius:6px;padding:3px 10px;font-size:.75rem;cursor:pointer;transition:all .2s;border:1px solid transparent}
+.link-tag:hover{border-color:#0078d4;color:#38bdf8}
+
+/* Connection line colors */
+.conn-identity{stroke:#0078d4;stroke-width:1.5;stroke-dasharray:none}
+.conn-deploy  {stroke:#22c55e;stroke-width:1.5}
+.conn-manage  {stroke:#a855f7;stroke-width:1.5}
+.conn-protect {stroke:#f97316;stroke-width:1.5}
+.conn-cross   {stroke:#475569;stroke-width:1;stroke-dasharray:5,3}
+
+@media(max-width:700px){
+  .node{min-width:130px;padding:10px 12px}
+  .detail-body{grid-template-columns:1fr}
+  header h1{font-size:1.3rem}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>MD102 エンドポイント管理者 コンポーネント図</h1>
+  <p>Microsoft 365 Certified: Endpoint Administrator Associate — 各機能の繋がりを可視化</p>
+</header>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#0078d4"></div>ID・コンプライアンス管理 (20%)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Windows クライアント展開 (25%)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>デバイス管理・維持 (40%)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div>デバイス保護 (40%内)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6"></div>アプリ・データ管理 (15%)</div>
+  <div class="legend-item" style="margin-left:12px"><svg width="30" height="10"><line x1="0" y1="5" x2="30" y2="5" stroke="#0078d4" stroke-width="1.5"/></svg> 強い連携</div>
+  <div class="legend-item"><svg width="30" height="10"><line x1="0" y1="5" x2="30" y2="5" stroke="#475569" stroke-width="1" stroke-dasharray="4,2"/></svg> 連携</div>
+</div>
+
+<div class="diagram-area" id="diagramArea">
+  <svg class="connections" id="svgConn"></svg>
+
+  <!-- Row 1: Identity & Access -->
+  <div class="domain-label">■ ID・アクセス管理</div>
+  <div class="row center">
+    <div class="node identity" id="n-entraid" data-id="entraid"
+      data-title="Microsoft Entra ID (Azure AD)"
+      data-domain="identity" data-domain-label="ID・コンプライアンス管理"
+      data-desc="エンドポイント管理の中核となるクラウドID基盤。デバイス登録・ユーザー認証・グループポリシーの起点となる。Azure AD Join / Hybrid Azure AD Join によりデバイスを管理対象として登録する。"
+      data-links="conditional-access,whfb,autopilot,intune,compliance">
+      <div class="node-icon">🏛️</div>
+      <div class="node-title">Microsoft Entra ID</div>
+      <div class="node-sub">旧 Azure AD<br>デバイス登録・ユーザー認証</div>
+    </div>
+    <div class="node identity" id="n-conditional-access" data-id="conditional-access"
+      data-title="条件付きアクセス (Conditional Access)"
+      data-domain="identity" data-domain-label="ID・コンプライアンス管理"
+      data-desc="Entra ID が提供するアクセス制御ポリシー。デバイスコンプライアンス状態・場所・リスクレベルなどを条件にリソースへのアクセスを許可/拒否/MFA要求する。Intuneのコンプライアンスポリシーと連携して動作する。"
+      data-links="entraid,compliance,mfa">
+      <div class="node-icon">🔒</div>
+      <div class="node-title">条件付きアクセス</div>
+      <div class="node-sub">Conditional Access<br>ポリシーベースアクセス制御</div>
+    </div>
+    <div class="node identity" id="n-whfb" data-id="whfb"
+      data-title="Windows Hello for Business / MFA"
+      data-domain="identity" data-domain-label="ID・コンプライアンス管理"
+      data-desc="パスワードレス認証を実現する仕組み。PINや生体認証でデバイスをロック解除しEntra IDに認証する。MFAと組み合わせてゼロトラストの基盤を構成する。Intuneのデバイス構成プロファイルで展開できる。"
+      data-links="entraid,intune">
+      <div class="node-icon">🔑</div>
+      <div class="node-title">Windows Hello / MFA</div>
+      <div class="node-sub">パスワードレス認証<br>生体認証・PIN</div>
+    </div>
+    <div class="node identity" id="n-compliance" data-id="compliance"
+      data-title="コンプライアンスポリシー (Compliance Policy)"
+      data-domain="identity" data-domain-label="ID・コンプライアンス管理"
+      data-desc="デバイスが組織の基準(暗号化・OS最小バージョン・ウイルス対策など)を満たしているか評価するIntuneのポリシー。非準拠デバイスは条件付きアクセスでリソースへのアクセスをブロックできる。"
+      data-links="intune,conditional-access,defender">
+      <div class="node-icon">✅</div>
+      <div class="node-title">コンプライアンスポリシー</div>
+      <div class="node-sub">Intune 準拠評価<br>非準拠→CAでブロック</div>
+    </div>
+  </div>
+
+  <!-- Row 2: Deployment -->
+  <div class="domain-label" style="margin-top:10px">■ Windows クライアント展開</div>
+  <div class="row center">
+    <div class="node deploy" id="n-autopilot" data-id="autopilot"
+      data-title="Windows Autopilot"
+      data-domain="deploy" data-domain-label="Windows クライアント展開"
+      data-desc="ゼロタッチデプロイメントを実現するクラウドベースの展開サービス。OEM出荷状態のデバイスが起動→Entra IDに参加→Intuneに自動登録→アプリ・設定が自動適用される。展開プロファイルで User-driven / Self-deploying / Pre-provisioned モードを選択する。"
+      data-links="entraid,intune,esp">
+      <div class="node-icon">🚀</div>
+      <div class="node-title">Windows Autopilot</div>
+      <div class="node-sub">ゼロタッチ展開<br>クラウドネイティブデプロイ</div>
+    </div>
+    <div class="node deploy" id="n-esp" data-id="esp"
+      data-title="Enrollment Status Page (ESP)"
+      data-domain="deploy" data-domain-label="Windows クライアント展開"
+      data-desc="Autopilot 展開中にポリシー・アプリ・証明書の適用完了まで画面をブロックするIntuneの機能。デバイスフェーズ・ユーザーフェーズの2段階で設定が完了するまで待機させ、未設定状態でのログインを防ぐ。"
+      data-links="autopilot,intune">
+      <div class="node-icon">⏳</div>
+      <div class="node-title">登録ステータスページ</div>
+      <div class="node-sub">ESP (Enrollment Status Page)<br>展開完了まで待機</div>
+    </div>
+    <div class="node deploy" id="n-mdt" data-id="mdt"
+      data-title="Microsoft Deployment Toolkit (MDT)"
+      data-domain="deploy" data-domain-label="Windows クライアント展開"
+      data-desc="オンプレミスのWindowsイメージ展開ツール。タスクシーケンスでOS展開・ドライバ適用・アプリインストールを自動化する。WDS(Windows Deployment Services)と組み合わせてPXEブートで大規模展開が可能。"
+      data-links="wds,comanage">
+      <div class="node-icon">🖥️</div>
+      <div class="node-title">MDT</div>
+      <div class="node-sub">Microsoft Deployment Toolkit<br>オンプレイメージ展開</div>
+    </div>
+    <div class="node deploy" id="n-wds" data-id="wds"
+      data-title="Windows Deployment Services (WDS)"
+      data-domain="deploy" data-domain-label="Windows クライアント展開"
+      data-desc="PXEブートによるネットワーク越しのOS展開サービス。MDTと組み合わせてLite Touch Installation (LTI) を実現する。ネットワーク経由でWindowsイメージを配布し多数のPCを一括展開できる。"
+      data-links="mdt">
+      <div class="node-icon">🌐</div>
+      <div class="node-title">WDS</div>
+      <div class="node-sub">Windows Deployment Services<br>PXEブート展開</div>
+    </div>
+    <div class="node deploy" id="n-upgrade" data-id="upgrade"
+      data-title="Windows アップグレード戦略"
+      data-domain="deploy" data-domain-label="Windows クライアント展開"
+      data-desc="既存PCのWindowsをアップグレードする方法。In-place Upgrade (既存設定・データを保持したまま上書きアップグレード) が最も一般的。Subscription Activation で Pro→Enterprise へのライセンスアップグレードも管理できる。"
+      data-links="intune,comanage">
+      <div class="node-icon">⬆️</div>
+      <div class="node-title">アップグレード戦略</div>
+      <div class="node-sub">In-place Upgrade<br>Subscription Activation</div>
+    </div>
+  </div>
+
+  <!-- Row 3: Device Management Core -->
+  <div class="domain-label" style="margin-top:10px">■ デバイス管理・維持 (中核)</div>
+  <div class="row center">
+    <div class="node manage" id="n-intune" data-id="intune"
+      data-title="Microsoft Intune (MDM/MAM)"
+      data-domain="manage" data-domain-label="デバイス管理・維持"
+      data-desc="MD102試験の中心となるクラウドベースのモバイルデバイス管理(MDM)・モバイルアプリ管理(MAM)サービス。Windows/iOS/Android/macOSを一元管理。ポリシー・アプリ・コンプライアンス・更新を管理し、Entra IDと深く統合されている。"
+      data-links="entraid,autopilot,configprofile,compliance,appdeployment,wufb,defender,comanage,appprotection">
+      <div class="node-icon">☁️</div>
+      <div class="node-title">Microsoft Intune</div>
+      <div class="node-sub">MDM / MAM<br>クラウド統合エンドポイント管理</div>
+    </div>
+    <div class="node manage" id="n-comanage" data-id="comanage"
+      data-title="共同管理 (Co-management)"
+      data-domain="manage" data-domain-label="デバイス管理・維持"
+      data-desc="Microsoft Endpoint Configuration Manager (MECM/SCCM) と Intune の両方で同時にデバイスを管理する形態。ワークロード(コンプライアンス・デバイス構成・Windows Update など)を段階的にIntuneへ移行できる。クラウド移行の橋渡し役。"
+      data-links="intune,mecm">
+      <div class="node-icon">🤝</div>
+      <div class="node-title">共同管理 (Co-management)</div>
+      <div class="node-sub">Intune + MECM 並行管理<br>クラウド移行の橋渡し</div>
+    </div>
+    <div class="node manage" id="n-mecm" data-id="mecm"
+      data-title="Microsoft Endpoint Configuration Manager (MECM)"
+      data-domain="manage" data-domain-label="デバイス管理・維持"
+      data-desc="旧 System Center Configuration Manager (SCCM)。オンプレミスのデバイス管理ツール。大規模なソフトウェア配布・OSイメージ展開・インベントリ管理が得意。Co-managementでIntuneと共存しながら段階的にクラウド移行できる。"
+      data-links="comanage,mdt">
+      <div class="node-icon">🏢</div>
+      <div class="node-title">MECM (旧 SCCM)</div>
+      <div class="node-sub">オンプレミス管理<br>大規模SW配布・OS展開</div>
+    </div>
+    <div class="node manage" id="n-analytics" data-id="analytics"
+      data-title="Endpoint Analytics"
+      data-domain="manage" data-domain-label="デバイス管理・維持"
+      data-desc="エンドポイントのパフォーマンス・稼働状態を測定しスコア化するMicrosoft 365の分析サービス。起動スコア・アプリの信頼性・推奨設定スコアなどを提供し、問題のあるデバイスを特定して改善アクションを提案する。"
+      data-links="intune">
+      <div class="node-icon">📊</div>
+      <div class="node-title">Endpoint Analytics</div>
+      <div class="node-sub">デバイス稼働分析<br>スコアリング・改善提案</div>
+    </div>
+  </div>
+
+  <!-- Row 4: Config & Protection -->
+  <div class="domain-label" style="margin-top:10px">■ 構成管理・保護</div>
+  <div class="row center">
+    <div class="node manage" id="n-configprofile" data-id="configprofile"
+      data-title="デバイス構成プロファイル (Configuration Profile)"
+      data-domain="manage" data-domain-label="デバイス管理・維持"
+      data-desc="IntuneでデバイスのOS設定・機能を制御するポリシーセット。Wi-Fi・VPN・証明書・制限・Windows Hello・BitLockerなど多様な設定カテゴリがある。Entra IDグループに割り当てて適用する。Administrative Templates(ADMX)でGPOと同等の設定も可能。"
+      data-links="intune,entraid,wufb,whfb">
+      <div class="node-icon">⚙️</div>
+      <div class="node-title">デバイス構成プロファイル</div>
+      <div class="node-sub">Wi-Fi/VPN/証明書/BitLocker<br>ADMX/セキュリティベースライン</div>
+    </div>
+    <div class="node protect" id="n-wufb" data-id="wufb"
+      data-title="Windows Update for Business (WUfB)"
+      data-domain="protect" data-domain-label="デバイス管理・維持"
+      data-desc="クラウドベースのWindows更新管理サービス。品質更新・機能更新の適用タイミングを制御する更新リング(Update Ring)を設定できる。Intuneの更新ポリシーまたはDeployment Service(WUfB DS)でより細かい展開制御が可能。"
+      data-links="intune,configprofile">
+      <div class="node-icon">🔄</div>
+      <div class="node-title">Windows Update for Business</div>
+      <div class="node-sub">WUfB<br>更新リング・品質/機能更新管理</div>
+    </div>
+    <div class="node protect" id="n-defender" data-id="defender"
+      data-title="Microsoft Defender for Endpoint"
+      data-domain="protect" data-domain-label="デバイス管理・維持"
+      data-desc="エンタープライズ向けEDR(エンドポイント検出・対応)プラットフォーム。マルウェア保護・脅威インテリジェンス・脆弱性管理を提供。IntuneのMDM登録デバイスへのオンボーディング、コンプライアンスポリシーとの連携でリスクベースの条件付きアクセスを実現。"
+      data-links="intune,compliance,conditional-access">
+      <div class="node-icon">🛡️</div>
+      <div class="node-title">Defender for Endpoint</div>
+      <div class="node-sub">EDR・脅威保護・脆弱性管理<br>Intuneと統合オンボード</div>
+    </div>
+    <div class="node protect" id="n-bitlocker" data-id="bitlocker"
+      data-title="BitLocker / BitLocker Recovery"
+      data-domain="protect" data-domain-label="デバイス管理・維持"
+      data-desc="Windowsのディスク暗号化機能。Intuneのデバイス構成プロファイルまたはエンドポイントセキュリティポリシーで有効化・設定できる。回復キーはEntra IDに自動エスクローされ、Intune管理者ポータルやユーザーポータルから確認可能。"
+      data-links="intune,configprofile,entraid">
+      <div class="node-icon">🔐</div>
+      <div class="node-title">BitLocker</div>
+      <div class="node-sub">ディスク暗号化<br>回復キー→Entra IDにエスクロー</div>
+    </div>
+  </div>
+
+  <!-- Row 5: Apps & Data -->
+  <div class="domain-label" style="margin-top:10px">■ アプリ・データ管理</div>
+  <div class="row center">
+    <div class="node apps" id="n-appdeployment" data-id="appdeployment"
+      data-title="アプリ展開 (App Deployment)"
+      data-domain="apps" data-domain-label="アプリ・データ管理"
+      data-desc="IntuneでWindowsアプリを展開する機能。MSIXパッケージ・Win32アプリ・ストアアプリ・LOBアプリなどを対象グループに割り当てる。必須インストール・利用可能インストール・アンインストールの3モードがある。Win32アプリはIntuneWin形式に変換して配布する。"
+      data-links="intune,m365apps,mstore">
+      <div class="node-icon">📦</div>
+      <div class="node-title">アプリ展開</div>
+      <div class="node-sub">Win32/MSIX/LOB/ストアアプリ<br>必須・利用可能・アンインストール</div>
+    </div>
+    <div class="node apps" id="n-m365apps" data-id="m365apps"
+      data-title="Microsoft 365 Apps (旧 Office 365 ProPlus)"
+      data-domain="apps" data-domain-label="アプリ・データ管理"
+      data-desc="Word/Excel/PowerPoint/Outlookなどのサブスクリプション型Officeスイート。Intuneから展開時はOffice Deployment Tool (ODT) の設定に相当するオプションをGUIで指定できる。更新チャネル(Current/Monthly Enterprise/Semi-Annual)の選択が重要。"
+      data-links="appdeployment,intune,onedrive">
+      <div class="node-icon">📋</div>
+      <div class="node-title">Microsoft 365 Apps</div>
+      <div class="node-sub">Office スイート<br>更新チャネル管理</div>
+    </div>
+    <div class="node apps" id="n-appprotection" data-id="appprotection"
+      data-title="アプリ保護ポリシー (App Protection Policy)"
+      data-domain="apps" data-domain-label="アプリ・データ管理"
+      data-desc="MAM(モバイルアプリ管理)の核心機能。MDM未登録のBYODデバイスでも組織データを保護できる。コピー貼付制限・保存先制限・PINロック・リモートワイプ(組織データのみ)などを設定する。IntuneをMAMプロバイダとして利用。"
+      data-links="intune,onedrive,m365apps">
+      <div class="node-icon">🔏</div>
+      <div class="node-title">アプリ保護ポリシー</div>
+      <div class="node-sub">MAM / BYOD対応<br>組織データの選択的ワイプ</div>
+    </div>
+    <div class="node apps" id="n-mstore" data-id="mstore"
+      data-title="Microsoft Store for Business / Winget"
+      data-domain="apps" data-domain-label="アプリ・データ管理"
+      data-desc="組織向けアプリ配布の仕組み。Microsoft Store for Business (廃止予定) から新しいMicrosoft Store アプリ配布に移行が進んでいる。Winget (Windows Package Manager) と Intuneを組み合わせたWin32アプリ管理も現代的なアプローチ。"
+      data-links="appdeployment,intune">
+      <div class="node-icon">🏪</div>
+      <div class="node-title">Microsoft Store / Winget</div>
+      <div class="node-sub">ストアアプリ・パッケージ管理<br>Intune連携配布</div>
+    </div>
+    <div class="node apps" id="n-onedrive" data-id="onedrive"
+      data-title="OneDrive for Business"
+      data-domain="apps" data-domain-label="アプリ・データ管理"
+      data-desc="組織のファイル同期・バックアップサービス。OneDrive CSP (Configuration Service Provider) を使いIntuneで設定を管理する。KFM (Known Folder Move) でデスクトップ・ドキュメント・ピクチャを自動的にOneDriveに移行させることができる。"
+      data-links="appprotection,m365apps,intune">
+      <div class="node-icon">☁️</div>
+      <div class="node-title">OneDrive for Business</div>
+      <div class="node-sub">ファイル同期・KFM<br>Intune で CSP 管理</div>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Panel -->
+<div class="detail-panel" id="detailPanel">
+  <div class="detail-header">
+    <span class="detail-title" id="dTitle"></span>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="detail-domain" id="dDomain"></span>
+      <button class="detail-close" onclick="closeDetail()">✕</button>
+    </div>
+  </div>
+  <div class="detail-body">
+    <div class="detail-desc" id="dDesc"></div>
+    <div class="detail-links">
+      <h4>連携コンポーネント</h4>
+      <div class="link-list" id="dLinks"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const domainColors = {
+  identity: '#0078d4',
+  deploy:   '#22c55e',
+  manage:   '#a855f7',
+  protect:  '#f97316',
+  apps:     '#8b5cf6'
+};
+
+const nodeData = {};
+document.querySelectorAll('.node').forEach(n => {
+  nodeData[n.dataset.id] = {
+    el: n,
+    title: n.dataset.title,
+    domain: n.dataset.domain,
+    domainLabel: n.dataset.domainLabel,
+    desc: n.dataset.desc,
+    links: n.dataset.links ? n.dataset.links.split(',') : []
+  };
+  n.addEventListener('click', () => selectNode(n.dataset.id));
+});
+
+// connections to draw [from, to, style]
+const connections = [
+  // Identity layer
+  ['n-entraid','n-conditional-access','identity'],
+  ['n-entraid','n-whfb','identity'],
+  ['n-entraid','n-compliance','identity'],
+  ['n-conditional-access','n-compliance','identity'],
+  // Entra ID ↔ Intune (core link)
+  ['n-entraid','n-intune','identity'],
+  // Deployment
+  ['n-autopilot','n-entraid','deploy'],
+  ['n-autopilot','n-intune','deploy'],
+  ['n-autopilot','n-esp','deploy'],
+  ['n-mdt','n-wds','deploy'],
+  ['n-mdt','n-mecm','deploy'],
+  ['n-upgrade','n-intune','cross'],
+  // Management
+  ['n-intune','n-comanage','manage'],
+  ['n-comanage','n-mecm','manage'],
+  ['n-intune','n-analytics','manage'],
+  // Config & Protection
+  ['n-intune','n-configprofile','manage'],
+  ['n-intune','n-compliance','manage'],
+  ['n-intune','n-wufb','manage'],
+  ['n-intune','n-defender','manage'],
+  ['n-intune','n-bitlocker','manage'],
+  ['n-configprofile','n-wufb','cross'],
+  ['n-configprofile','n-bitlocker','cross'],
+  ['n-defender','n-compliance','protect'],
+  // Apps
+  ['n-intune','n-appdeployment','apps'],
+  ['n-intune','n-appprotection','apps'],
+  ['n-intune','n-onedrive','apps'],
+  ['n-appdeployment','n-m365apps','apps'],
+  ['n-appdeployment','n-mstore','apps'],
+  ['n-appprotection','n-onedrive','apps'],
+  ['n-m365apps','n-onedrive','apps'],
+];
+
+function getCenter(el) {
+  const area = document.getElementById('diagramArea');
+  const aRect = area.getBoundingClientRect();
+  const eRect = el.getBoundingClientRect();
+  return {
+    x: eRect.left - aRect.left + eRect.width / 2,
+    y: eRect.top  - aRect.top  + eRect.height / 2
+  };
+}
+
+function drawConnections() {
+  const svg = document.getElementById('svgConn');
+  const area = document.getElementById('diagramArea');
+  svg.setAttribute('viewBox', `0 0 ${area.offsetWidth} ${area.offsetHeight}`);
+  svg.innerHTML = '';
+
+  connections.forEach(([fromId, toId, type]) => {
+    const fromEl = document.getElementById(fromId);
+    const toEl   = document.getElementById(toId);
+    if (!fromEl || !toEl) return;
+    const f = getCenter(fromEl);
+    const t = getCenter(toEl);
+    const dx = t.x - f.x, dy = t.y - f.y;
+    const mx = f.x + dx * .5;
+    const my = f.y + dy * .5 - Math.abs(dx) * .08;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d', `M${f.x},${f.y} Q${mx},${my} ${t.x},${t.y}`);
+    path.setAttribute('fill','none');
+    path.setAttribute('opacity','0.55');
+
+    if (type === 'cross') {
+      path.setAttribute('stroke','#475569');
+      path.setAttribute('stroke-width','1');
+      path.setAttribute('stroke-dasharray','5,3');
+    } else {
+      path.setAttribute('stroke', domainColors[type] || '#0078d4');
+      path.setAttribute('stroke-width','1.5');
+    }
+    svg.appendChild(path);
+  });
+}
+
+let activeId = null;
+
+function selectNode(id) {
+  if (activeId === id) { closeDetail(); return; }
+  activeId = id;
+  const d = nodeData[id];
+
+  document.querySelectorAll('.node').forEach(n => {
+    n.classList.remove('active','faded');
+    if (n.dataset.id === id) n.classList.add('active');
+    else if (!d.links.includes(n.dataset.id)) n.classList.add('faded');
+  });
+
+  document.getElementById('dTitle').textContent = d.title;
+  const domSpan = document.getElementById('dDomain');
+  domSpan.textContent = d.domainLabel;
+  domSpan.style.background = domainColors[d.domain] + '33';
+  domSpan.style.color = domainColors[d.domain];
+  document.getElementById('dDesc').textContent = d.desc;
+
+  const linksDiv = document.getElementById('dLinks');
+  linksDiv.innerHTML = '';
+  d.links.forEach(lid => {
+    const ln = nodeData[lid];
+    if (!ln) return;
+    const tag = document.createElement('span');
+    tag.className = 'link-tag';
+    tag.textContent = ln.el.querySelector('.node-title').textContent;
+    tag.style.borderColor = domainColors[ln.domain] + '66';
+    tag.addEventListener('click', e => { e.stopPropagation(); selectNode(lid); });
+    linksDiv.appendChild(tag);
+  });
+
+  document.getElementById('detailPanel').classList.add('show');
+}
+
+function closeDetail() {
+  activeId = null;
+  document.querySelectorAll('.node').forEach(n => n.classList.remove('active','faded'));
+  document.getElementById('detailPanel').classList.remove('show');
+}
+
+window.addEventListener('resize', drawConnections);
+// draw after layout
+requestAnimationFrame(() => setTimeout(drawConnections, 100));
+</script>
+</body>
+</html>
