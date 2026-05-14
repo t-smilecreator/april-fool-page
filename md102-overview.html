@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MD102 機能概要図 — 構成例付き</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+
+header{background:linear-gradient(135deg,#0078d4,#005a9e);padding:24px;text-align:center}
+header h1{font-size:1.8rem;font-weight:700;color:#fff}
+header p{color:#bfdbfe;margin-top:6px;font-size:.95rem}
+
+/* Tab nav */
+.tab-nav{display:flex;flex-wrap:wrap;gap:4px;padding:14px 20px;background:#1e293b;border-bottom:1px solid #334155;position:sticky;top:0;z-index:50}
+.tab-btn{padding:8px 18px;border:1px solid #334155;background:transparent;color:#94a3b8;border-radius:8px;cursor:pointer;font-size:.85rem;font-weight:600;transition:all .2s;white-space:nowrap}
+.tab-btn:hover{border-color:#0078d4;color:#38bdf8}
+.tab-btn[data-tab="identity"].active{background:#0078d4;border-color:#0078d4;color:#fff}
+.tab-btn[data-tab="deploy"].active  {background:#16a34a;border-color:#16a34a;color:#fff}
+.tab-btn[data-tab="manage"].active  {background:#9333ea;border-color:#9333ea;color:#fff}
+.tab-btn[data-tab="protect"].active {background:#ea580c;border-color:#ea580c;color:#fff}
+.tab-btn[data-tab="apps"].active    {background:#7c3aed;border-color:#7c3aed;color:#fff}
+
+/* Content */
+.tab-content{display:none;padding:24px 20px;max-width:1200px;margin:0 auto}
+.tab-content.active{display:block}
+.section-title{font-size:1rem;font-weight:700;color:#64748b;margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid #334155;letter-spacing:.04em;text-transform:uppercase}
+
+/* Cards grid */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(510px,1fr));gap:20px}
+
+/* Card */
+.card{background:#1e293b;border:1px solid #334155;border-radius:12px;overflow:hidden;transition:border-color .2s}
+.card:hover{border-color:#475569}
+
+.card-header{padding:16px 20px;display:flex;align-items:flex-start;gap:14px}
+.card-icon{font-size:1.7rem;flex-shrink:0;margin-top:2px}
+.card-meta{flex:1;min-width:0}
+.card-title{font-size:.98rem;font-weight:700;color:#f8fafc;margin-bottom:3px}
+.card-path{font-size:.7rem;color:#475569;font-family:'Cascadia Code','Consolas',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-badge{font-size:.68rem;padding:2px 9px;border-radius:10px;font-weight:700;flex-shrink:0;align-self:flex-start}
+
+.card-body{padding:0 20px 18px}
+.card-desc{font-size:.86rem;color:#94a3b8;line-height:1.68;margin-bottom:14px}
+
+/* Config panel */
+.config-panel{background:#0f172a;border-radius:8px;overflow:hidden;margin-bottom:12px}
+.config-panel-title{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:8px 14px;display:flex;align-items:center;gap:6px}
+.config-rows{padding:2px 14px 12px}
+.config-row{display:flex;align-items:flex-start;gap:10px;padding:4px 0;border-bottom:1px solid #1e293b;font-size:.8rem;line-height:1.5}
+.config-row:last-child{border-bottom:none}
+.config-label{color:#64748b;min-width:160px;flex-shrink:0;padding-top:1px}
+.config-value{color:#e2e8f0;font-family:'Cascadia Code','Consolas',monospace;font-size:.77rem;flex:1;line-height:1.55}
+.config-section-head{color:#334155;font-size:.67rem;padding:8px 0 1px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-bottom:none}
+
+/* Badges */
+.b-yes{color:#4ade80;font-weight:700}
+.b-no {color:#f87171;font-weight:700}
+.b-req{background:#052e16;color:#4ade80;border-radius:4px;padding:1px 6px;font-size:.72rem;font-weight:700}
+
+/* Tip */
+.tip-box{display:flex;gap:8px;border-left:3px solid;border-radius:0 6px 6px 0;padding:8px 12px;font-size:.8rem;line-height:1.55}
+.tip-icon{flex-shrink:0;margin-top:1px}
+
+/* Domain color schemes */
+.identity .card-header{border-bottom:1px solid #1e3a5f}
+.identity .card-badge{background:#1e3a5f;color:#60a5fa}
+.identity .config-panel-title{background:#1e3a5f;color:#60a5fa}
+.identity .tip-box{background:#0c1e36;border-color:#0078d4;color:#93c5fd}
+
+.deploy .card-header{border-bottom:1px solid #14532d}
+.deploy .card-badge{background:#14532d;color:#4ade80}
+.deploy .config-panel-title{background:#14532d;color:#4ade80}
+.deploy .tip-box{background:#052e16;border-color:#16a34a;color:#86efac}
+
+.manage .card-header{border-bottom:1px solid #3b0764}
+.manage .card-badge{background:#3b0764;color:#c084fc}
+.manage .config-panel-title{background:#3b0764;color:#c084fc}
+.manage .tip-box{background:#2e1065;border-color:#9333ea;color:#d8b4fe}
+
+.protect .card-header{border-bottom:1px solid #431407}
+.protect .card-badge{background:#431407;color:#fb923c}
+.protect .config-panel-title{background:#431407;color:#fb923c}
+.protect .tip-box{background:#1c0a00;border-color:#ea580c;color:#fdba74}
+
+.apps .card-header{border-bottom:1px solid #2e1065}
+.apps .card-badge{background:#2e1065;color:#a78bfa}
+.apps .config-panel-title{background:#2e1065;color:#a78bfa}
+.apps .tip-box{background:#1e0a4e;border-color:#7c3aed;color:#c4b5fd}
+
+@media(max-width:640px){
+  .cards-grid{grid-template-columns:1fr}
+  .config-label{min-width:110px;font-size:.72rem}
+  header h1{font-size:1.3rem}
+  .tab-btn{padding:6px 10px;font-size:.78rem}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>MD102 機能概要図 — 構成例付き</h1>
+  <p>Microsoft 365 Certified: Endpoint Administrator Associate — 各機能の役割・構成設定・試験ポイントを整理</p>
+</header>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="identity">🔵 ID・認証 (20%)</button>
+  <button class="tab-btn" data-tab="deploy">🟢 Windows展開 (25%)</button>
+  <button class="tab-btn" data-tab="manage">🟣 デバイス管理 (40%)</button>
+  <button class="tab-btn" data-tab="protect">🟠 保護・更新</button>
+  <button class="tab-btn" data-tab="apps">🔷 アプリ・データ (15%)</button>
+</nav>
+
+<!-- ===== TAB: Identity ===== -->
+<section id="tab-identity" class="tab-content active">
+<div class="section-title">ID・コンプライアンス管理</div>
+<div class="cards-grid">
+
+  <div class="card identity">
+    <div class="card-header">
+      <div class="card-icon">🏛️</div>
+      <div class="card-meta">
+        <div class="card-title">Microsoft Entra ID（旧 Azure AD）</div>
+        <div class="card-path">Entra ID ポータル → デバイス → デバイスの設定</div>
+      </div>
+      <span class="card-badge">ID基盤</span>
+    </div>
+    <div class="card-body">
+      <p class="card-desc">エンドポイント管理の中核となるクラウド ID プラットフォーム。デバイス参加方式によって管理手段・Intune 自動登録の挙動が変わるため、Join 方式の選択が最重要。</p>
+      <div class="config-panel">
+        <div class="config-panel-title">📋 デバイス参加方式の比較</div>
+        <div class="config-rows">
+          <div class="config-row"><span class="config-label">Azure AD Join</span><span class="config-value">クラウドネイティブ / Intune MDM 自動登録 / 新規 PC 向け</span></div>
+          <div class="config-row"><span class="config-label">Hybrid Azure AD Join</span><span class="config-value">オンプレ AD + Entra ID 両方 / MECM 共存 / 既存 PC 向け</span></div>
+          <div class="config-row"><span class="config-label">Azure AD 登録</span><span class="config-value">BYOD / 個人デバイス / MAM 管理向け (MDM 任意)</span></div>
+          <div class="config-row"><span class="config-label">MDM 自動登録</span><span class="config-value">Azure AD Join 時 → Intune へ自動登録</span></div>
+          <div class="config-row config-section-head">— デバイスグループ —</div>
+          <div class="config-row"><span class="config-label">動的グループ</span><span class="config-value">OS / モデル / 部署 / Join 方式で自動分類</span></div>
+          <div class="config-row"><span class="config-label">割り当て基準</span><span class="config-value">デバイスグループ または ユーザーグループ</span></div>
+        </div>
+      </div>
+      <div class="tip-box identity"><span class="tip-icon">💡</span>Azure AD Join = Intune 自動登録 の流れが試験頻出。オンプレ AD が不要な新規環境では AAD Join + Intune がクラウドネイティブの標準構成。</div>
+    </div>
+  </div>
+
+  <div class="card identity">
+    <div class="card-header">
+      <div class="card-icon">🔒</div>
+      <div class="card-meta">
+        <div class="card-title">条件付きアクセス（Conditional Access）</div>
+        <div class="card-path">Entra ID → 保護 → 条件付きアクセス → 新しいポリシー</div>
+      </div>
+      <span class="card-badge">アクセス制御</span>
+    </div>
+    <div class="card-body">
+      <p class="card-desc">「IF 条件 THEN アクション」の形式でアクセスポリシーを定義する Entra ID の機能。コンプライアンスポリシーと組み合わせることで、非準拠デバイスをリソースから自動遮断できる。</p>
+      <div class="config-panel">
+        <div class="config-panel-title">📋 ポリシー構成例（デバイス準拠必須）</div>
+        <div class="config-rows">
+          <div class="config-row config-section-head">— 割り当て —</div>
+          <div class="config-row"><span class="config-label">ユーザー</span><span class="config-value">すべてのユーザー（除外: Break Glass アカウント）</span></div>
+          <div class="config-row"><span class="config-label">クラウドアプリ</span><span class="config-value">Office 365 / Microsoft 365 全体</span></div>
+          <div class="config-row"><span class="config-label">条件: デバイスプラットフォーム</span><span class="config-value">Windows / iOS / Android</span></div>
+          <div class="config-row config-section-head">— アクセス制御 —</div>
+          <div class="config-row"><span class="config-label">許可（Grant）</span><span class="config-value"><span class="b-req">✅ 準拠デバイス必須</span>　OR　MFA 必須</span></div>
+          <div class="config-row"><span class="config-label">セッション</span><span class="config-value">サインイン頻度: 1 日</span></div>
+          <div class="config-row"><span class="config-label">ポリシー状態</span><span class="config-value">レポートのみ → テスト後に有効化</span></div>
+        </div>
+      </div>
+      <div class="tip-box identity"><span class="tip-icon">💡</span>Break Glass アカウント（緊急管理者）は必ず CA 除外に設定。テナント全体のロックアウトを防ぐために MFA なしの専用アカウントを用意する。</div>
+    </div>
+  </div>
+
+  <div class="card identity">
+    <div class="card-header">
+      <div class="card-icon">🔑</div>
+      <div class="card-meta">
+        <div class="card-title">Windows Hello for Business / MFA</div>
+        <div class="card-path">Intune → デバイス → 構成プロファイル → Windows Hello for Business</div>
+      </div>
+      <span class="card-badge">パスワードレス</span>
+    </div>
+    <div class="card-body">
+      <p class="card-desc">PIN・顔認証・指紋認証でパスワードなしに Entra ID へ認証する仕組み。認証情報はデバイスの TPM チップに保存されるためフィッシング耐性が高く、ゼロトラストの基盤となる。</p>
+      <div class="config-panel">
+        <div class="config-panel-title">📋 Intune 構成プロファイル設定例</div>
+        <div class="config-rows">
+          <div class="config-row"><span class="config-label">Windows Hello for Business</span><span class="config-value"><span class="b-yes">有効</span></span></div>
+          <div class="config-row"><span class="config-label">PIN 最小長</span><span class="config-value">6 桁</span></div>
+          <div class="config-row"><span class="config-label">PIN 最大長</span><span class="config-value">127 桁</span></div>
+          <div class="config-row"><span class="config-label">生体認証</span><span class="config-value"><span class="b-yes">許可</span></span></div>
+          <div class="config-row"><span class="config-label">高度ななりすまし防止</span><span class="config-value"><span class="b-yes">有効</span></span></div>
+          <div class="config-row"><span class="config-label">PIN 回復</span><span class="config-value"><span class="b-yes">有効</span></span></div>
+          <div class="config-row"><span class="config-label">TPM 要件</span><span class="config-value">TPM 2.0 以上</span></div>
+        </div>
+      </div>
+      <div class="tip-box identity"><span class="tip-icon">💡</span>WHfB は非対称鍵認証のためパスワードがネットワークを流れない。Pass-the-Hash / Pass-the-Ticket 攻撃を無効化できる点が試験で問われる。</div>
+    </div>
+  </div>
+
+  <div class="card identity">
+    <div class="card-header">
+      <div class="card-icon">✅</div>
+      <div class="card-meta">
+        <div class="card-title">コンプライアンスポリシー</div>
+        <div class="card-path">Intune → デバイス → コンプライアンスポリシー → ポリシーの作成</div>
+      </div>
+      <span class="card-badge">準拠評価</span>
+    </div>
+    <div class="card-body">
+      <p class="card-desc">デバイスが組織のセキュリティ基準を満たすか評価するポリシー。評価結果（準拠 / 非準拠）が CA に渡りアクセス制御に活用される。非準拠へのアクションも段階的に設定できる。</p>
+      <div class="config-panel">
+        <div class="config-panel-title">📋 Windows 11 コンプライアンスポリシー設定例</div>
+        <div class="config-rows">
+          <div class="config-row config-section-head">— デバイスの正常性 —</div>
+          <div class="config-row"><span class="config-label">BitLocker</span><span class="config-value"><span class="b-req">必須</span></span></div>
+          <div class="config-row"><span class="config-label">セキュアブート</span><span class="config-value"><span class="b-req">必須</span></span></div>
+          <div class="config-row"><span class="config-label">コード整合性</span><span class="config-value"><span class="b-req">必須</span></span></div>
+          <div class="config-row config-section-head">— デバイスのプロパティ —</div>
+          <div class="config-row"><span class="config-label">OS 最小バージョン</span><span class="config-value">10.0.22000（Windows 11）</span></div>
+          <div class="config-row config-section-head">— システムセキュリティ —</div>
+          <div class="config-row"><span class="config-label">リアルタイム保護</span><span class="config-value"><span class="b-req">必須</span></span></div>
+          <div class="config-row"><span class="config-label">ウイルス対策 / スパイウェア</span><span class="config-value"><span class="b-req">必須</span></span></div>
+          <div class="config-row config-section-head">— 非準拠アクション —</div>
+          <div class="config-row"><span class="config-label">デバイスをマーク</span><span class="config-value">即座に非準拠</span></div>
+          <div class="config-row"><span class="config-label">メール送信</span><span class="config-value">1 日後（ユーザーへ通知）</span></div>
+          <div class="config-row"><span class="config-label">リタイア</span><span class="config-value">30 日後（組織データを削除）</span></div>
+        </div>
+      </div>
+      <div class="tip-box identity"><span class="tip-icon">💡</span>CA ポリシーで「準拠デバイス必須」を設定することで、非準拠 → Microsoft 365 リソースへアクセス不可 のフローが完成する。</div>
+    </div>
+  </div>
+
+</div>
+</section>
+
+<!-- ===== TAB: Deploy ===== -->
+<section id="tab-deploy" class="tab-content">
+<div class="section-title">Windows クライアント展開</div>
+<div class="cards-grid">
+
+  <div class="card deploy">
+    <div class="card-header">
+      <div class="card-icon">🚀</div>
+      <div class="card-meta">
+        <div class="card-title">Windows Autopilot</div>
+        <div class="card-path">Intune → デバイス → 登録 → Windows Autopilot → 展開プロファイル</div>
+      </div>
+      <span class="card-badge">ゼロタッチ展開</span>
+    </div>
+    <div class="card-body">
+      <p class="card-desc">OEM 出荷状態のデバイスを箱から出してネットに繋ぐだけで企業環境に自動展開する仕組み。事前にハードウェアハッシュを Intune へ登録しておくだけで IT 部門の作業が不要になる。</p>
+      <div class="config-panel">
+        <div class="config-panel-title">📋 展開プロファイル設定例（ユーザー主導）</div>
+        <div class="config-rows">
+          <div class="config-row"><span class="config-label">展開モード</span><span class="config-value">ユーザー主導（User-driven）</span></div>
+          <div class="config-row"><span class="config-label">参加形式</span><span class="config-value">Azure AD 参加済み</span></div>
+          <div class="config-row"><span class="config-label">使用許諾契約書</span><span class="config-value"><span class="b-yes">非表示</span></span></div>
+          <div class="config-row"><span class="config-label">プライバシー設定</span><span class="config-value"><span class="b-yes">非表示</span></span></div>
+          <div class="config-row"><span class="config-label">アカウントの種類</span><span class="config-value">標準ユーザー（管理者権限なし）</span></div>
+          <div class="config-row"><span class="config-label">デバイス名テンプレート</span><span class="config-value">CORP-%SERIAL%　/　JP-%RAND:5%</span></div>
+          <div class="config-row config-section-head">— デバイス登録方法 —</div>
+          <div class="config-row"><span class="config-label">OEM 直接登録</span><span class="config-value">CSV（最大 500 件 / 回）をメーカーが登録</span></div>
+          <div class="config-row"><span class="config-label">既存デバイス</span><span class="config-value">Get-WindowsAutoPilotInfo.ps1 で CSV 生成</span></div>
+          <div class="config-row config-section-head">— 展開モード 3 種 —</div>
+          <div class="config-row"><span class="config-label">ユーザー主導</span><span class="config-value">一般ユーザーが OOBE 中に認証</span></div>
+          <div class="config-row"><span class="config-label">セルフデプロイ</span><span class="config-value">ユーザー操作ゼロ（キオスク / 共有 PC 向け）</span></div>
+          <div class="config-row"><span class="config-label">事前プロビジョニング</span><span class="config-value">IT が事前設定済み → ユーザーへ渡す（White Glove）</span></div>
+        </div>
+      </div>
+      <div class="tip-box deploy"><span class="tip-icon">💡</span>展開モード 3 種の違いは試験頻出。セルフデプロイはユーザーアカウントが不要なため共有デバイス・キオスク端末に使用する。</div>
+    </div>
+  </div>
+
+  <div class="card deploy">
+    <div class="card-header">
+      <div class="card-icon">⏳</div>
+      <div class="card-meta">
+        <div class="card-title">登録ステータスページ（ESP）</div>
+        <div class="card-path">Intune → デバイス → 登録 → 登録ステータスページ</div>
+      </div>
+      <span class="card-badge">展開制御</span>
+    </div>
+    <div class="card-body">
+      <p class="card-desc">Autopilot 展開中、すべてのポリシー・アプリ・証明書が適用完了するまでデスクトップへの進行をブロックする機能。「設定未完了な状態でのログイン」を防ぐ。</p>
+      <div class="config-panel">
+        <div class="config-panel-title">📋 ESP プロファイル設定例</div>
+        <div class="config-rows">
+          <div class="config-row"><span class="config-label">アプリとプロファイルの追跡</span><span class="config-value"><span class="b-yes">はい</span></span></div>
+          <div class="config-row"><span class="config-label">エラー表示</span><span class="config-value"><span class="b-yes">はい</span></span></div>
+          <div class="config-row"><span class="config-label">ユーザーによるログ収集</span><span class="config-value"><span class="b-yes">許可</span></span></div>
+          <div class="config-row"><span class="config-label">タイムアウト（分）</span><span class="config-value">60</span></div>
+          <div class="config-row"><span class="config-label">タイムアウト時メッセージ</span><span class="config-value">IT ヘルプデスクへご連絡ください</span></div>
+          <div class="config-row"><span class="config-label">ブロックするデバイスアプリ</span><span class="config-value">Defender for Endpoint / VPN クライアント</span></div>
+          <div class="config-row config-section-head">— 2 フェーズ構成 —</div>
+          <div class="config-row"><span class="config-label">デバイスフェーズ</span><span class="config-value">デバイスポリシー・証明書の適用（ログイン前）</span></div>
+          <div class="config-row"><span class="config-label">ユーザーフェーズ</span><span class="config-value">ユーザー向けアプリ・設定の適用（ログイン後）</span></div>
+        </div>
+      </div>
+      <div class="tip-box deploy"><span class="tip-icon">💡</span>ESP の「ブロックするアプリ」に必須アプリを入れすぎると展開時間が長くなる。セキュリティ上重要なアプリ（Defender・VPN）のみ指定するのが実運用のベストプラクティス。</div>
+    </div>
+  </div>
+
+  <div class="card deploy">
+    <div class="card-header">
+      <div class="card-icon">🖥️</div>
+      <div class="card-meta">
+        <div class="card-title">Microsoft Deployment Toolkit（MDT）</div>
+        <div class="card-path">MDT Deployment Share → タスクシーケンス → WDS 連携</div>
+      </div>
+      <span class="card-badge">オンプレ展開</span>
+    </div>
+    <div class="card-body">
+      <p class="card-desc">オンプレミスで Windows イメージをネットワーク越しに大規模展開するツール。WDS と組み合わせ PXE ブートで起動し、タスクシーケンスで OS 展開からアプリ・ドメイン参加まで完全自動化できる。</p>
+      <div class="config-panel">
+        <div class="config-panel-title">📋 標準タスクシーケンス構成例</div>
+        <div class="config-rows">
+          <div class="config-row"><span class="config-label">1. 初期化</span><span class="config-value">BIOS / UEFI チェック、ディスクパーティション作成</span></div>
+          <div class="config-row"><span class="config-label">2. OS イメージ適用</span><span class="config-value">WIM / ESD イメージを展開</span></div>
+          <div class="config-row"><span class="config-label">3. Windows 設定</span><span class="config-value">プロダクトキー / タイムゾーン / ロケール</span></div>
+          <div class="config-row"><span class="config-label">4. ドライバ適用</span><span class="config-value">モデル別ドライバパック注入</span></div>
+          <div class="config-row"><span class="config-label">5. Windows 更新</span><span class="config-value">WU 経由で最新パッチ適用</span></div>
+          <div class="config-row"><span class="config-label">6. アプリインストール</span><span class="config-value">必須アプリの自動インストール</span></div>
+          <div class="config-row"><span class="config-label">7. ドメイン参加</span><span class="config-value">オンプレ AD へ参加</span></div>
+          <div class="config-row config-section-head">— 展開方式 —</div>
+          <div class="config-row"><span class="config-label">LTI（Lite Touch）</span><span class="config-value">最小限の対話で MDT のみで自動展開</span></div>
+          <div class="config-row"><span class="config-label">ZTI（Zero Touch）</span><span class="config-value">MECM と連携して完全無人展開</span></div>
+        </div>
+      </div>
+      <div class="tip-box deploy"><span class="tip-icon">💡</span>クラウド移行済み環境では MDT → Autopilot 移行が推奨。ただし試験では MDT・WDS・タスクシーケンスの基礎知識も問われる。</div>
+    </div>
+  </div>
+
+  <div class="card deploy">
+    <div class="card-header">
+      <div class="card-icon">⬆️</div>
+      <div class="card-meta">
+        <div class="card-title">Windows アップグレード戦略</div>
+        <div class="card-path">Intune → デバイス → 構成プロファイル → エディションのアップグレード</div>
+      </div>
+      <span class="card-badge">移行・更新</span>
+    </div>
+    <div class="card-body">
+      <p class="card-desc">既存 PC の Windows を上位バージョン・エディションへ移行する手段。In-place Upgrade がデータを保持できる標準的な方法。Pro → Enterprise は Subscription Activation で追加コストなく変換できる。</p>
+      <div class="config-panel">
+        <div class="config-panel-title">📋 アップグレード方式の比較と設定</div>
+        <div class="config-rows">
+          <div class="config-row config-section-head">— OS バージョンアップ —</div>
+          <div class="config-row"><span class="config-label">In-place Upgrade</span><span class="config-value">データ / 設定 / アプリを保持して上書き（推奨）</span></div>
+          <div class="config-row"><span class="config-label">クリーンインストール</span><span class="config-value">データ全削除 → Autopilot + KFM と組み合わせ</span></div>
+          <div class="config-row"><span class="config-label">失敗時の診断</span><span class="config-value">SetupDiag.exe で失敗原因を解析</span></div>
+          <div class="config-row config-section-head">— エディションアップグレード —</div>
+          <div class="config-row"><span class="config-label">Subscription Activation</span><span class="config-value">Pro → Enterprise（M365 E3 / E5 ライセンス）</span></div>
+          <div class="config-row"><span class="config-label">Intune 構成プロファイル</span><span class="config-value">エディションアップグレード + プロダクトキー</span></div>
+          <div class="config-row config-section-head">— 機能更新の制御 —</div>
+          <div class="config-row"><span class="config-label">Feature Update ポリシー</span><span class="config-value">Intune で特定バージョンへピン留め可能</span></div>
+          <div class="config-row"><span class="config-label">最大遅延</span><span class="config-value">365 日（機能更新）/ 30 日（品質更新）</span></div>
+        </div>
+      </div>
+      <div class="tip-box deploy"><span class="tip-icon">💡</span>Subscription Activation は Hybrid Azure AD Join 環境でも動作する。ライセンスを Intune で割り当てるだけで Pro → Enterprise に自動変換される。</div>
+    </div>
+  </div>
+
+</div>
+</section>
+
+<!-- ===== TAB: Manage ===== -->
+<section id="tab-manage" class="tab-content">
+<div class="section-title">デバイス管理・維持</div>
+<div class="cards-grid">
+
+  <div class="card manage">
+    <div class="card-header">
+      <div class="card-icon">☁️</div>
+      <div class="card-meta">
+        <div class="card-title">Microsoft Intune（MDM / MAM）</div>
+        <div class="card-path">intune.microsoft.com — Microsoft Intune 管理センター</div>
+      </div>
+      <span class="card-badge">クラウド MDM</span>
+    </div>
+    <div class="card-body">
+      <p class="card-desc">MD102 試験の中心となるクラウドエンドポイント管理サービス。MDM（デバイス全体管理）と MAM（アプリ単位管理）の両方を提供し、Windows / iOS / Android / macOS を一元管理できる。</p>
+      <div class="config-panel">
+        <div class="config-panel-title">📋 デバイス登録方式（Windows）</div>
+        <div class="config-rows">
+          <div class="config-row"><span class="config-label">Autopilot</span><span class="config-value">ゼロタッチ / 新規 PC 向け（推奨）</span></div>
+          <div class="config-row"><span class="config-label">Entra ID Join → 自動登録</span><span class="config-value">設定アプリ → 会社や学校にアクセス</span></div>
+          <div class="config-row"><span class="config-label">会社ポータルアプリ</span><span class="config-value">ユーザー自己登録 / BYOD 向け</span></div>
+          <div class="config-row"><span class="config-label">一括登録（PPKG）</span><span class="config-value">Windows 構成デザイナーでパッケージ作成</span></div>
+          <div class="config-row"><span class="config-label">共同管理（MECM 連携）</span><span class="config-value">既存 MECM 環境からの段階移行</span></div>
+          <div class="config-row config-section-head">— ポリシー適用の優先順位 —</div>
+          <div class="config-row"><span class="config-label">競合時の動作</span><span class="config-value">最も制限が厳しい設定が適用される</span></div>
+          <div class="config-row"><span class="config-label">スコープタグ</span><span class="config-value">地域 / 部署ごとに管理者権限を分離</span></div>
+        </div>
+      </div>
+      <div class="tip-box manage"><span class="tip-icon">💡</span>登録なしの MAM（MAM-WE）でも組織データを保護できる。BYOD 端末はデバイス全体の MDM 登録を強制せずアプリ保護ポリシーのみ適用が現実的。</div>
+    </div>
+  </div>
+
+  <div class="card manage">
+    <div class="card-header">
+      <div class="card-icon">🤝</div>
+      <div class="card-meta">
+        <div class="card-title">共同管理（Co-management）</div>
+        <div class="card-path">MECM → クラウドアタッチ → 共同管理の有効化</div>
+      </div>
+      <span class="card-badge">ハイブリッド管理</span>
+    </div>
+    <div class="card-body">
+      <p class="card-desc">MECM と Intune を同時に使い、ワークロード（管理責任）を段階的に Intune へ移行できる橋渡し機能。オンプレ資産を壊さずにクラウド管理へ移行するための重要な過渡的手段。</p>
+      <div class="config-panel">
+        <div class="config-panel-title">📋 ワークロード段階移行例</div>
+        <div class="config-rows">
+          <div class="config-row config-section-head">— フェーズ 1：即時移行推奨 —</div>
+          <div class="config-row"><span class="config-label">コンプライアンスポリシー</span><span class="config-value">MECM → <span class="b-yes">Intune</span>（CA との連携が必要）</span></div>
+          <div class="config-row"><span class="config-label">Windows Update</span><span class="config-value">MECM → <span class="b-yes">Intune（WUfB）</span></span></div>
+          <div class="config-row config-section-head">— フェーズ 2：段階移行 —</div>
+          <div class="config-row"><span class="config-label">デバイス構成</span><span class="config-value">MECM → <span class="b-yes">Intune</span>（GPO 移行と並行）</span></div>
+          <div class="config-row"><span class="config-label">エンドポイント保護</span><span class="config-value">MECM → <span class="b-yes">Intune</span>（Defender 統合）</span></div>
+          <div class="config-row config-section-head">— フェーズ 3：慎重に移行 —</div>
+          <div class="config-row"><span class="config-label">クライアントアプリ</span><span class="config-value">MECM 維持 → 徐々に Intune Win32 へ</span></div>
+          <div class="config-row config-section-head">— 前提条件 —</div>
+          <div class="config-row"><span class="config-label">要件</span><span class="config-value">MECM CB + Hybrid AAD Join + クラウド管理 GW</span></div>
+          <div class="config-row"><span class="config-label">パイロット機能</span><span class="config-value">一部グループのみ先行 Intune 化してテスト可</span></div>
+        </div>
+      </div>
+      <div class="tip-box manage"><span class="tip-icon">💡</span>パイロットグループ機能で一部デバイスだけ先に Intune ワークロードへ移行してテストできる。全体展開前の検証に必ず活用する。</div>
+    </div>
+  </div>
+
+  <div class="card manage">
+    <div class="card-header">
+      <div class="card-icon">⚙️</div>
+      <div class="card-meta">
+        <div class="card-title">デバイス構成プロファイル</div>
+        <div class="card-path">Intune → デバイス → 構成プロファイル → プロファイルの作成</div>
+      </div>
+      <span class="card-badge">OS 設定管理</span>
+    </div>
+    <div class="card-body">
+      <p class="card-desc">Intune でデバイスの OS 設定を集中管理するポリシーセット。オンプレのグループポリシー（GPO）をクラウドで代替する重要機能。設定カテゴリは 100 種類以上に及ぶ。</p>
+      <div class="config-panel">
+        <div class="config-panel-title">📋 主要プロファイルの種類と用途</div>
+        <div class="config-rows">
+          <div class="config-row"><span class="config-label">ADMX テンプレート</span><span class="config-value">Edge / Office / Chrome の GPO をクラウド管理</span></div>
+          <div class="config-row"><span class="config-label">セキュリティベースライン</span><span class="config-value">MS 推奨セキュリティ設定を一括適用</span></div>
+          <div class="config-row"><span class="config-label">Wi-Fi プロファイル</span><span class="config-value">SSID / WPA2-Enterprise / EAP-TLS（証明書認証）</span></div>
+          <div class="config-row"><span class="config-label">VPN プロファイル</span><span class="config-value">Always-on VPN / Microsoft Tunnel</span></div>
+          <div class="config-row"><span class="config-label">証明書プロファイル</span><span class="config-value">SCEP / PKCS 証明書の自動配布</span></div>
+          <div class="config-row"><span class="config-label">エディションアップグレード</span><span class="config-value">Windows Pro → Enterprise 変換</span></div>
+          <div class="config-row"><span class="config-label">キオスクモード</span><span class="config-value">シングルアプリ / マルチアプリ キオスク</span></div>
+          <div class="config-row"><span class="config-label">PowerShell スクリプト</span><span class="config-value">カスタム設定の一括展開</span></div>
+          <div class="config-row"><span class="config-label">カスタム OMA-URI</span><span class="config-value">CSP で提供されていない設定を手動指定</span></div>
+        </div>
+      </div>
+      <div class="tip-box manage"><span class="tip-icon">💡</span>GPO 移行には Group Policy Analytics（Intune）が使えるが対応率は 70〜80% 程度。残りは ADMX テンプレートやカスタム OMA-URI で代替する。</div>
+    </div>
+  </div>
+
+  <div class="card manage">
+    <div class="card-header">
+      <div class="card-icon">📊</div>
+      <div class="card-meta">
+        <div class="card-title">Endpoint Analytics</div>
+        <div class="card-path">Intune → レポート → Endpoint Analytics</div>
+      </div>
+      <span class="card-badge">稼働分析</span>
+    </div>
+    <div class="card-body">
+      <p class="card-desc">デバイスのパフォーマンス・稼働品質を数値化してスコアリングするサービス。問題デバイスを早期発見し、プロアクティブ修復スクリプトで自動解決まで実施できる。</p>
+      <div class="config-panel">
+        <div class="config-panel-title">📋 スコアと測定項目</div>
+        <div class="config-rows">
+          <div class="config-row"><span class="config-label">スタートアップパフォーマンス</span><span class="config-value">起動時間・ログイン時間をスコア化（0〜100）</span></div>
+          <div class="config-row"><span class="config-label">推奨設定スコア</span><span class="config-value">セキュリティ / ハードウェア要件の準拠率</span></div>
+          <div class="config-row"><span class="config-label">アプリの信頼性</span><span class="config-value">アプリクラッシュ・ハング頻度</span></div>
+          <div class="config-row config-section-head">— プロアクティブ修復 —</div>
+          <div class="config-row"><span class="config-label">検出スクリプト</span><span class="config-value">ExitCode 1 = 問題あり → 修復スクリプト実行</span></div>
+          <div class="config-row"><span class="config-label">修復スクリプト</span><span class="config-value">問題を検出したデバイスのみ自動実行</span></div>
+          <div class="config-row config-section-head">— 前提条件 —</div>
+          <div class="config-row"><span class="config-label">対象デバイス</span><span class="config-value">Intune 登録済み または MECM 共同管理対象</span></div>
+          <div class="config-row"><span class="config-label">ライセンス</span><span class="config-value">Microsoft 365 E3 / E5 / Intune Plan 1</span></div>
+        </div>
+      </div>
+      <div class="tip-box manage"><span class="tip-icon">💡</span>プロアクティブ修復は検出（ExitCode 1 = 問題あり）と修復の 2 本構成。問題を検出したデバイスのみ修復スクリプトが実行されるため効率的。</div>
+    </div>
+  </div>
+
+</div>
+</section>
+
+<!-- ===== TAB: Protect ===== -->
+<section id="tab-protect" class="tab-content">
+<div class="section-title">デバイス保護・更新管理</div>
+<div class="cards-grid">
+
+  <div class="card protect">
+    <div class="card-header">
+      <div class="card-icon">🔄</div>
+      <div class="card-meta">
+        <div class="card-title">Windows Update for Business（WUfB）</div>
+        <div class="card-path">Intune → デバイス → Windows 更新 → 更新リング</div>
+      </div>
+      <span class="card-badge">更新管理</span>
+    </div>
+    <div class="card-body">
+      <p class="card-desc">品質更新（セキュリティパッチ）と機能更新（メジャーバージョン）の適用タイミングをグループ（更新リング）ごとにコントロールする。段階的ロールアウトで影響を最小化する。</p>
+      <div class="config-panel">
+        <div class="config-panel-title">📋 更新リング構成例（4 段階）</div>
+        <div class="config-rows">
+          <div class="config-row config-section-head">リング 1: Pilot（IT 部門 約 10 台）</div>
+          <div class="config-row"><span class="config-label">品質更新遅延</span><span class="config-value">0 日（即時）</span></div>
+          <div class="config-row"><span class="config-label">機能更新遅延</span><span class="config-value">0 日</span></div>
+          <div class="config-row config-section-head">リング 2: Early Adopters</div>
+          <div class="config-row"><span class="config-label">品質更新遅延</span><span class="config-value">7 日</span></div>
+          <div class="config-row"><span class="config-label">機能更新遅延</span><span class="config-value">30 日</span></div>
+          <div class="config-row config-section-head">リング 3: Broad（一般ユーザー）</div>
+          <div class="config-row"><span class="config-label">品質更新遅延</span><span class="config-value">14 日</span></div>
+          <div class="config-row"><span class="config-label">機能更新遅延</span><span class="config-value">60 日</span></div>
+          <div class="config-row config-section-head">— 共通設定 —</div>
+          <div class="config-row"><span class="config-label">更新デッドライン</span><span class="config-value">品質: 3 日　/ 機能: 5 日</span></div>
+          <div class="config-row"><span class="config-label">再起動アクティブ時間</span><span class="config-value">8:00〜18:00（この間は再起動しない）</span></div>
+          <div class="config-row"><span class="config-label">最大遅延日数</span><span class="config-value">品質: 30 日　/ 機能: 365 日</span></div>
+        </div>
+      </div>
+      <div class="tip-box protect"><span class="tip-icon">💡</span>品質更新はセキュリティパッチが含まれるため過度な遅延は危険。Pilot → Broad の段階展開で問題を早期発見し、Broad リングへの被害拡大を防ぐ設計が重要。</div>
+    </div>
+  </div>
+
+  <div class="card protect">
+    <div class="card-header">
+      <div class="card-icon">🛡️</div>
+      <div class="card-meta">
+        <div class="card-title">Microsoft Defender for Endpoint</div>
+        <div class="card-path">Intune → エンドポイントセキュリティ → Microsoft Defender for Endpoint</div>
+      </div>
+      <span class="card-badge">EDR・脅威保護</span>
+    </div>
+    <div class="card-body">
+      <p class="card-desc">エンタープライズ向け EDR プラットフォーム。Intune とネイティブ統合されオンボーディングを自動化できる。デバイスリスクスコアをコンプライアンスポリシーに連携しリスクベース CA を実現する。</p>
+      <div class="config-panel">
+        <div class="config-panel-title">📋 Intune 統合・設定例</div>
+        <div class="config-rows">
+          <div class="config-row config-section-head">— オンボーディング手順 —</div>
+          <div class="config-row"><span class="config-label">① MDE コネクタ</span><span class="config-value">Intune → エンドポイントセキュリティ → MDE 接続を有効化</span></div>
+          <div class="config-row"><span class="config-label">② 構成プロファイル</span><span class="config-value">MDE オンボーディングプロファイルをデバイスに展開</span></div>
+          <div class="config-row config-section-head">— セキュリティ設定 —</div>
+          <div class="config-row"><span class="config-label">クラウド提供の保護</span><span class="config-value"><span class="b-yes">有効</span></span></div>
+          <div class="config-row"><span class="config-label">リアルタイム保護</span><span class="config-value"><span class="b-yes">有効</span></span></div>
+          <div class="config-row"><span class="config-label">タンパープロテクション</span><span class="config-value"><span class="b-yes">有効</span>（無効化を防ぐ）</span></div>
+          <div class="config-row"><span class="config-label">ASR ルール</span><span class="config-value">Office マクロブロック / 子プロセス作成禁止</span></div>
+          <div class="config-row config-section-head">— Intune 連携 —</div>
+          <div class="config-row"><span class="config-label">デバイスリスクスコア</span><span class="config-value">低 / 中 / 高 → コンプライアンスポリシーと連携</span></div>
+          <div class="config-row"><span class="config-label">リスク高デバイス</span><span class="config-value">→ 非準拠 → CA でブロック（自動連鎖）</span></div>
+        </div>
+      </div>
+      <div class="tip-box protect"><span class="tip-icon">💡</span>ASR（Attack Surface Reduction）ルールはまず監査モードで影響を確認してから強制モードに切り替えるのがベストプラクティス。いきなり強制すると業務アプリがブロックされる場合がある。</div>
+    </div>
+  </div>
+
+  <div class="card protect">
+    <div class="card-header">
+      <div class="card-icon">🔐</div>
+      <div class="card-meta">
+        <div class="card-title">BitLocker ドライブ暗号化</div>
+        <div class="card-path">Intune → エンドポイントセキュリティ → ディスク暗号化</div>
+      </div>
+      <span class="card-badge">ディスク暗号化</span>
+    </div>
+    <div class="card-body">
+      <p class="card-desc">Windows のフルディスク暗号化機能。PC の紛失・盗難時にデータを保護する。回復キーを Entra ID に自動エスクローすることで紛失時の復号管理が容易になる。</p>
+      <div class="config-panel">
+        <div class="config-panel-title">📋 エンドポイントセキュリティ ポリシー設定例</div>
+        <div class="config-rows">
+          <div class="config-row config-section-head">— ドライブ暗号化 —</div>
+          <div class="config-row"><span class="config-label">暗号化方式（OS ドライブ）</span><span class="config-value">XTS-AES 128 ビット</span></div>
+          <div class="config-row"><span class="config-label">暗号化範囲</span><span class="config-value">使用済み領域のみ（新規 PC 向け・高速）</span></div>
+          <div class="config-row config-section-head">— 回復設定 —</div>
+          <div class="config-row"><span class="config-label">回復キーのバックアップ</span><span class="config-value">Azure AD（Entra ID）に必須で保存</span></div>
+          <div class="config-row"><span class="config-label">回復パスワード</span><span class="config-value">48 桁の数字キー</span></div>
+          <div class="config-row"><span class="config-label">IT 側での確認</span><span class="config-value">Intune ポータル → デバイス → 回復キー</span></div>
+          <div class="config-row"><span class="config-label">ユーザー側での確認</span><span class="config-value">myaccount.microsoft.com → デバイス</span></div>
+          <div class="config-row config-section-head">— 起動設定 —</div>
+          <div class="config-row"><span class="config-label">TPM 要件</span><span class="config-value">TPM 2.0</span></div>
+          <div class="config-row"><span class="config-label">起動認証</span><span class="config-value">TPM のみ（高セキュリティ時のみ起動 PIN 追加）</span></div>
+        </div>
+      </div>
+      <div class="tip-box protect"><span class="tip-icon">💡</span>回復キーはユーザー自身も myaccount.microsoft.com → デバイス → 回復キーの表示 から確認可能。ヘルプデスクへの問い合わせを大幅に削減できる。</div>
+    </div>
+  </div>
+
+</div>
+</section>
+
+<!-- ===== TAB: Apps ===== -->
+<section id="tab-apps" class="tab-content">
+<div class="section-title">アプリ・データ管理</div>
+<div class="cards-grid">
+
+  <div class="card apps">
+    <div class="card-header">
+      <div class="card-icon">📦</div>
+      <div class="card-meta">
+        <div class="card-title">アプリ展開（Win32 アプリ）</div>
+        <div class="card-path">Intune → アプリ → Windows → 追加 → Windows アプリ（Win32）</div>
+      </div>
+      <span class="card-badge">アプリ配布</span>
+    </div>
+    <div class="card-body">
+      <p class="card-desc">既存の MSI / EXE アプリを Intune から配布するための形式。IntuneWinAppUtil.exe で .intunewin 形式に変換してアップロードし、インストールコマンドと検出ルールを設定する。</p>
+      <div class="config-panel">
+        <div class="config-panel-title">📋 Win32 アプリ登録手順と設定例</div>
+        <div class="config-rows">
+          <div class="config-row config-section-head">— 変換（前作業）—</div>
+          <div class="config-row"><span class="config-label">変換ツール</span><span class="config-value">IntuneWinAppUtil.exe</span></div>
+          <div class="config-row"><span class="config-label">コマンド例</span><span class="config-value">-c C:\source -s setup.exe -o C:\output</span></div>
+          <div class="config-row config-section-head">— プログラム設定 —</div>
+          <div class="config-row"><span class="config-label">インストールコマンド</span><span class="config-value">setup.exe /silent /norestart</span></div>
+          <div class="config-row"><span class="config-label">アンインストールコマンド</span><span class="config-value">msiexec /x {ProductGUID} /quiet</span></div>
+          <div class="config-row"><span class="config-label">インストール動作</span><span class="config-value">システム（SYSTEM 権限）/ ユーザー</span></div>
+          <div class="config-row config-section-head">— 検出ルール —</div>
+          <div class="config-row"><span class="config-label">MSI 製品コード</span><span class="config-value">{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}</span></div>
+          <div class="config-row"><span class="config-label">ファイル存在</span><span class="config-value">C:\Program Files\App\app.exe</span></div>
+          <div class="config-row"><span class="config-label">レジストリ</span><span class="config-value">HKLM\SOFTWARE\App → DisplayVersion</span></div>
+          <div class="config-row config-section-head">— リターンコード —</div>
+          <div class="config-row"><span class="config-label">0</span><span class="config-value">成功</span></div>
+          <div class="config-row"><span class="config-label">3010　← 試験頻出!</span><span class="config-value">成功（再起動が必要）</span></div>
+          <div class="config-row"><span class="config-label">割り当て種別</span><span class="config-value">必須（強制）/ 利用可能（任意）/ アンインストール</span></div>
+        </div>
+      </div>
+      <div class="tip-box apps"><span class="tip-icon">💡</span>リターンコード 3010 は「再起動が必要だが成功」扱い。これを失敗と誤認識しないよう Intune に登録されていることを確認すること。</div>
+    </div>
+  </div>
+
+  <div class="card apps">
+    <div class="card-header">
+      <div class="card-icon">📋</div>
+      <div class="card-meta">
+        <div class="card-title">Microsoft 365 Apps（旧 Office 365 ProPlus）</div>
+        <div class="card-path">Intune → アプリ → Windows → 追加 → Microsoft 365 Apps</div>
+      </div>
+      <span class="card-badge">Office スイート</span>
+    </div>
+    <div class="card-body">
+      <p class="card-desc">Word / Excel / PowerPoint / Outlook 等のサブスクリプション型 Office スイート。Intune から展開する際は更新チャネルとアーキテクチャ選択が管理のポイントとなる。</p>
+      <div class="config-panel">
+        <div class="config-panel-title">📋 Intune 展開設定例</div>
+        <div class="config-rows">
+          <div class="config-row"><span class="config-label">アーキテクチャ</span><span class="config-value">64 ビット（推奨）</span></div>
+          <div class="config-row config-section-head">— 更新チャネル比較 —</div>
+          <div class="config-row"><span class="config-label">Current Channel</span><span class="config-value">月次リリース。最新機能を最速で提供</span></div>
+          <div class="config-row"><span class="config-label">Monthly Enterprise Channel</span><span class="config-value">月次（固定第 2 火曜）。バランス重視 ← 推奨</span></div>
+          <div class="config-row"><span class="config-label">Semi-Annual Enterprise</span><span class="config-value">半期リリース。安定重視 / 大企業向け</span></div>
+          <div class="config-row config-section-head">— アプリ選択 —</div>
+          <div class="config-row"><span class="config-label">除外できるアプリ</span><span class="config-value">Access / Publisher / Skype for Business</span></div>
+          <div class="config-row"><span class="config-label">言語</span><span class="config-value">日本語 + 英語（複数追加可能）</span></div>
+          <div class="config-row config-section-head">— ライセンス認証 —</div>
+          <div class="config-row"><span class="config-label">認証形式</span><span class="config-value">ユーザーベース（最大 5 デバイス / ユーザー）</span></div>
+          <div class="config-row"><span class="config-label">認証方法</span><span class="config-value">Microsoft 365 アカウントでサインイン</span></div>
+        </div>
+      </div>
+      <div class="tip-box apps"><span class="tip-icon">💡</span>ODT（Office Deployment Tool）の configuration.xml で細かく制御することも可能。Intune GUI は ODT のサブセットを提供している。チャネル変更は Intune から後からでも変更可能。</div>
+    </div>
+  </div>
+
+  <div class="card apps">
+    <div class="card-header">
+      <div class="card-icon">🔏</div>
+      <div class="card-meta">
+        <div class="card-title">アプリ保護ポリシー（MAM）</div>
+        <div class="card-path">Intune → アプリ → アプリ保護ポリシー → ポリシーの作成</div>
+      </div>
+      <span class="card-badge">BYOD・MAM</span>
+    </div>
+    <div class="card-body">
+      <p class="card-desc">MDM 未登録の BYOD デバイスでも組織データを保護できる MAM 機能。個人デバイスのアプリ内の組織データの漏洩を防ぎ、デバイス全体ワイプなしに組織データのみを選択的ワイプできる。</p>
+      <div class="config-panel">
+        <div class="config-panel-title">📋 iOS / Android MAM ポリシー設定例</div>
+        <div class="config-rows">
+          <div class="config-row config-section-head">— データ保護 —</div>
+          <div class="config-row"><span class="config-label">組織データのバックアップ</span><span class="config-value"><span class="b-no">ブロック</span>（個人クラウドへの転送禁止）</span></div>
+          <div class="config-row"><span class="config-label">他アプリへのデータ送信</span><span class="config-value">ポリシー管理アプリのみ</span></div>
+          <div class="config-row"><span class="config-label">コピー & ペースト</span><span class="config-value">ポリシー管理アプリ内のみ許可</span></div>
+          <div class="config-row"><span class="config-label">画面キャプチャ（Android）</span><span class="config-value"><span class="b-no">ブロック</span></span></div>
+          <div class="config-row config-section-head">— アクセス要件 —</div>
+          <div class="config-row"><span class="config-label">PIN</span><span class="config-value"><span class="b-yes">必須</span>（6 桁以上 / 生体認証でオーバーライド可）</span></div>
+          <div class="config-row"><span class="config-label">非アクティブ後再認証</span><span class="config-value">30 分</span></div>
+          <div class="config-row config-section-head">— 条件付き起動 —</div>
+          <div class="config-row"><span class="config-label">OS 最小バージョン</span><span class="config-value">iOS 16.0 / Android 11.0（古い場合ブロック）</span></div>
+          <div class="config-row"><span class="config-label">脱獄 / Root 検知</span><span class="config-value">アクセスのブロック</span></div>
+          <div class="config-row config-section-head">— セレクティブワイプ —</div>
+          <div class="config-row"><span class="config-label">ワイプ対象</span><span class="config-value">組織データのみ削除（個人データは保持）</span></div>
+        </div>
+      </div>
+      <div class="tip-box apps"><span class="tip-icon">💡</span>MAM はデバイス登録不要。「登録なしの MAM（MAM-WE）」が BYOD 対応の核心。デバイス全体を管理せずアプリ内データのみ制御できる。</div>
+    </div>
+  </div>
+
+  <div class="card apps">
+    <div class="card-header">
+      <div class="card-icon">🗂️</div>
+      <div class="card-meta">
+        <div class="card-title">OneDrive for Business（KFM）</div>
+        <div class="card-path">Intune → デバイス → 構成プロファイル → ADMX テンプレート → OneDrive</div>
+      </div>
+      <span class="card-badge">データ保護</span>
+    </div>
+    <div class="card-body">
+      <p class="card-desc">Known Folder Move（KFM）でデスクトップ・ドキュメント・ピクチャを OneDrive に自動バックアップする機能。PC 紛失・交換時のデータ復元を自動化し、ユーザーへの負担をゼロにできる。</p>
+      <div class="config-panel">
+        <div class="config-panel-title">📋 Intune ADMX テンプレート（OneDrive）設定例</div>
+        <div class="config-rows">
+          <div class="config-row config-section-head">— 必須設定 —</div>
+          <div class="config-row"><span class="config-label">テナント ID</span><span class="config-value">xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</span></div>
+          <div class="config-row config-section-head">— KFM 設定 —</div>
+          <div class="config-row"><span class="config-label">サイレントフォルダ移行</span><span class="config-value"><span class="b-yes">有効</span>（ユーザー操作なしで自動移行）</span></div>
+          <div class="config-row"><span class="config-label">対象フォルダ</span><span class="config-value">デスクトップ / ドキュメント / ピクチャ</span></div>
+          <div class="config-row"><span class="config-label">ユーザーによる停止</span><span class="config-value"><span class="b-no">禁止</span></span></div>
+          <div class="config-row"><span class="config-label">移行通知</span><span class="config-value"><span class="b-yes">表示する</span></span></div>
+          <div class="config-row config-section-head">— 同期設定 —</div>
+          <div class="config-row"><span class="config-label">ファイルオンデマンド</span><span class="config-value"><span class="b-yes">有効</span>（ローカルストレージ節約）</span></div>
+          <div class="config-row"><span class="config-label">自動サインイン</span><span class="config-value"><span class="b-yes">有効</span>（Entra ID 資格情報で自動ログイン）</span></div>
+          <div class="config-row"><span class="config-label">帯域幅制限</span><span class="config-value">アップロード: 1 Mbps（業務影響防止）</span></div>
+        </div>
+      </div>
+      <div class="tip-box apps"><span class="tip-icon">💡</span>KFM 有効化後はデスクトップのファイルも自動的にクラウドバックアップ。新 PC に乗り換えた際、OneDrive サインイン後に即座にファイルが復元されるためユーザーの移行ストレスがゼロになる。</div>
+    </div>
+  </div>
+
+</div>
+</section>
+
+<script>
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  });
+});
+</script>
+</body>
+</html>
