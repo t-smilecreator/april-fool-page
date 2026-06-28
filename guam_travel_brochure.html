@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<style>
+  :root{
+    --ocean1:#0a4d8c; --ocean2:#1a7fc4; --ocean3:#36b3d6;
+    --sky:#e8f6fc; --gold:#ffd23f; --goldDark:#f0a500;
+    --ink:#1f2e3d; --muted:#5a6b7a; --line:#dfeaf2;
+    --navy:#0d2a44; --coral:#ff6b5e; --sand:#fff6e6;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body{
+    font-family:"IPAPGothic","IPAGothic","Noto Color Emoji",sans-serif;
+    color:var(--ink); line-height:1.7; font-size:11px;
+  }
+  .page{
+    width:210mm; min-height:297mm; padding:0; position:relative;
+    page-break-after:always; overflow:hidden; background:#fff;
+  }
+  .page:last-child{ page-break-after:auto; }
+  .pad{ padding:16mm 15mm; }
+  .emoji{ font-family:"Noto Color Emoji"; }
+
+  /* ---------- COVER ---------- */
+  .cover{
+    background:linear-gradient(170deg,#062f5c 0%,#0a4d8c 35%,#1a7fc4 70%,#36b3d6 100%);
+    color:#fff; min-height:297mm; display:flex; flex-direction:column;
+    position:relative;
+  }
+  .sun{ position:absolute; top:24mm; right:24mm; width:70px; height:70px; border-radius:50%;
+    background:radial-gradient(circle at 40% 35%,#fff3b0,#ffcf33 55%,#ff9d00 100%);
+    box-shadow:0 0 45px 14px rgba(255,200,60,.55); }
+  .bubble{ position:absolute; border-radius:50%; background:rgba(255,255,255,.06); }
+  .cover-inner{ margin-top:auto; margin-bottom:auto; text-align:center; padding:0 20mm; z-index:2; }
+  .badge{ display:inline-block; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.4);
+    padding:6px 18px; border-radius:30px; letter-spacing:3px; font-size:11px; margin-bottom:22px; }
+  .cover h1{ font-size:96px; letter-spacing:8px; line-height:1; font-weight:900;
+    text-shadow:0 4px 22px rgba(0,0,0,.3); }
+  .cover h2{ font-size:34px; color:var(--gold); margin-top:6px; letter-spacing:6px; font-weight:900;
+    text-shadow:0 2px 10px rgba(0,0,0,.25); }
+  .cover .dates{ margin-top:26px; font-size:15px; background:rgba(0,0,0,.18); display:inline-block;
+    padding:10px 24px; border-radius:12px; }
+  .members{ margin-top:34px; display:flex; gap:14px; justify-content:center; }
+  .member{ background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.3);
+    border-radius:14px; padding:14px 18px; min-width:96px; }
+  .member .ico{ font-size:30px; }
+  .member .nm{ font-size:14px; font-weight:bold; margin-top:4px; }
+  .member .ag{ font-size:11px; opacity:.85; }
+  .wave{ position:absolute; bottom:0; left:0; width:100%; height:90px;
+    background:rgba(255,255,255,.10); border-radius:50% 50% 0 0 / 100% 100% 0 0; }
+  .cover-foot{ position:absolute; bottom:14mm; width:100%; text-align:center; font-size:11px;
+    opacity:.85; z-index:2; }
+
+  /* ---------- SECTION HEADERS ---------- */
+  .sec-h{ display:flex; align-items:center; gap:10px; font-size:24px; font-weight:900;
+    color:var(--ocean1); padding-bottom:8px; margin-bottom:18px;
+    border-bottom:3px solid var(--gold); }
+  .sec-h .num{ background:var(--ocean1); color:#fff; width:30px; height:30px; border-radius:8px;
+    display:inline-flex; align-items:center; justify-content:center; font-size:16px; }
+
+  /* ---------- PRENIGHT BANNER ---------- */
+  .prenote{ background:var(--sky); border:1px solid var(--line); border-left:5px solid var(--ocean2);
+    border-radius:10px; padding:11px 14px; margin-bottom:16px; font-size:10.5px; line-height:1.65; }
+  .prenote b{ color:var(--ocean1); }
+  .ok{ background:#e3f7e8; color:#1f8a3b; padding:1px 7px; border-radius:8px; font-weight:bold; font-size:9.5px; }
+
+  /* ---------- TIMELINE ---------- */
+  .day{ display:flex; gap:14px; margin-bottom:14px; }
+  .day-mark{ flex:0 0 46px; text-align:center; }
+  .day-num{ font-size:30px; font-weight:900; line-height:1; color:var(--ocean2); }
+  .day-lab{ font-size:9px; letter-spacing:1px; color:var(--muted); }
+  .day-card{ flex:1; background:#fff; border:1px solid var(--line); border-radius:12px;
+    box-shadow:0 3px 10px rgba(20,60,100,.06); border-top:4px solid var(--ocean3); overflow:hidden; }
+  .day-card.c0{ border-top-color:#9b6dff; } .day-card.c1{ border-top-color:#36b3d6; }
+  .day-card.c2{ border-top-color:#ffb02e; } .day-card.c3{ border-top-color:#3fbf6b; }
+  .day-card.c4{ border-top-color:#ff6b9d; } .day-card.c5{ border-top-color:#1a7fc4; }
+  .day-card .hd{ padding:9px 14px 4px; }
+  .day-date{ font-size:10px; color:var(--ocean2); font-weight:bold; }
+  .day-title{ font-size:15px; font-weight:900; color:var(--ink); margin-top:1px; }
+  .day-card ul{ list-style:none; padding:6px 14px 12px; }
+  .day-card li{ position:relative; padding-left:14px; margin:4px 0; font-size:10px; line-height:1.55; color:#33485a; }
+  .day-card li:before{ content:"▸"; position:absolute; left:0; color:var(--ocean3); }
+  .tag{ display:inline-block; background:var(--coral); color:#fff; font-size:8.5px; font-weight:bold;
+    padding:1px 7px; border-radius:8px; margin-left:4px; vertical-align:middle; }
+  .tag.b{ background:var(--ocean2);} .tag.g{ background:#3fbf6b;} .tag.p{ background:#9b6dff;} .tag.gold{ background:var(--goldDark);}
+
+  /* ---------- BUDGET ---------- */
+  .budget-hero{ background:linear-gradient(160deg,#0d2a44,#11436e); color:#fff; border-radius:16px;
+    text-align:center; padding:26px 20px; margin-bottom:22px; }
+  .budget-hero .big{ font-size:58px; font-weight:900; color:var(--gold); letter-spacing:2px;
+    text-shadow:0 3px 12px rgba(0,0,0,.3); }
+  .budget-hero .sub{ font-size:11px; opacity:.85; margin-top:4px; }
+  .bgrid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+  .bcard{ background:linear-gradient(160deg,#15517f,#0d3a5e); color:#fff; border-radius:12px;
+    padding:16px 10px; text-align:center; }
+  .bcard .ic{ font-size:26px; } .bcard .t{ font-size:10px; opacity:.9; margin:6px 0 4px; }
+  .bcard .v{ font-size:18px; font-weight:900; color:var(--gold); }
+  .fineprint{ font-size:8.5px; color:var(--muted); margin-top:16px; line-height:1.6; }
+
+  /* ---------- CHECKLIST ---------- */
+  .passport{ background:var(--sand); border:1px solid #ffe2a8; border-radius:12px; padding:14px 16px; margin-bottom:18px; }
+  .passport h3{ color:var(--goldDark); font-size:14px; margin-bottom:6px; }
+  .passport .hl{ background:#fff4d6; border:1px solid #ffe09e; border-radius:8px; padding:9px 12px; margin:8px 0; font-size:10px; }
+  .passport ul{ padding-left:18px; font-size:9.8px; line-height:1.65; }
+  .passport li{ margin:2px 0; }
+  .passport .save{ font-weight:bold; color:#1f8a3b; }
+  .cols{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+  .col{ border:1px solid var(--line); border-radius:12px; padding:14px; box-shadow:0 3px 10px rgba(20,60,100,.05); }
+  .col h4{ font-size:13px; margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+  .col.red h4{ color:var(--coral);} .col.blue h4{ color:var(--ocean2);} .col.green h4{ color:#2fa15a;}
+  .col ul{ list-style:none; }
+  .col li{ font-size:10px; padding:5px 0 5px 22px; position:relative; border-bottom:1px dashed var(--line); }
+  .col li:last-child{ border-bottom:none; }
+  .col li:before{ content:"☐"; position:absolute; left:2px; font-size:13px; color:var(--muted); }
+
+  /* ---------- TIPS ---------- */
+  .tips{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+  .tip{ border:1px solid var(--line); border-radius:14px; padding:16px 14px; text-align:center;
+    box-shadow:0 3px 10px rgba(20,60,100,.05); background:linear-gradient(170deg,#fff,#f6fbff); }
+  .tip .ic{ font-size:32px; }
+  .tip .t{ font-weight:900; font-size:13px; color:var(--ocean1); margin:8px 0 6px; }
+  .tip p{ font-size:10px; color:#44586a; line-height:1.6; }
+
+  .endcard{ margin-top:26px; background:linear-gradient(160deg,#0a4d8c,#36b3d6); color:#fff;
+    border-radius:16px; text-align:center; padding:30px 20px; }
+  .endcard .big{ font-size:30px; font-weight:900; color:var(--gold); }
+  .endcard p{ margin-top:8px; font-size:12px; }
+  .endcard .meta{ margin-top:14px; font-size:10px; opacity:.85; }
+</style>
+</head>
+<body>
+
+<!-- ============ PAGE 1 : COVER ============ -->
+<section class="page cover">
+  <div class="sun"></div>
+  <div class="bubble" style="width:120px;height:120px;top:120mm;left:18mm;"></div>
+  <div class="bubble" style="width:70px;height:70px;top:90mm;left:60mm;"></div>
+  <div class="bubble" style="width:50px;height:50px;top:150mm;right:30mm;"></div>
+  <div class="cover-inner">
+    <span class="badge"><span class="emoji">✈️</span>&nbsp; FAMILY TRAVEL 2027</span>
+    <h1>GUAM</h1>
+    <h2>グアム 家族の旅</h2>
+    <div class="dates"><span class="emoji">📅</span> 2027年1月19日（火）前泊 〜 1月24日（日）帰宅　／　4泊5日＋前泊</div>
+    <div class="members">
+      <div class="member"><div class="ico emoji">👨</div><div class="nm">達也</div><div class="ag">37歳</div></div>
+      <div class="member"><div class="ico emoji">👩</div><div class="nm">美希</div><div class="ag">37歳</div></div>
+      <div class="member"><div class="ico emoji">👧</div><div class="nm">美緒</div><div class="ag">12歳</div></div>
+      <div class="member"><div class="ico emoji">🧒</div><div class="nm">友也</div><div class="ag">10歳</div></div>
+    </div>
+  </div>
+  <div class="cover-foot">家族4人、最初の海外旅行 &nbsp;|&nbsp; ザツバキ タワー 全室オーシャンビュー &nbsp;|&nbsp; Family of 4</div>
+  <div class="wave"></div>
+</section>
+
+<!-- ============ PAGE 2 : SCHEDULE 1 ============ -->
+<section class="page"><div class="pad">
+  <div class="sec-h"><span class="num">1</span><span class="emoji">🗓️</span> 旅のスケジュール</div>
+
+  <div class="prenote">
+    <b><span class="emoji">🏨</span> 前日（1月19日）に成田前泊！</b> 東横INN成田空港（新館）がおすすめ<br>
+    相模大野 → 新宿 → 成田空港（所要 約2時間）｜ JAL JL941便 成田10:00発 → グアム14:35着｜
+    宿泊：<b>ザツバキ タワー</b>（カメリアクラブルーム／オーシャンビュー・バルコニー付き・ラウンジアクセス込／1部屋4人）
+    ｜ <span class="ok">✓ 予約確定済み（2026/6/14）</span>
+  </div>
+
+  <div class="day">
+    <div class="day-mark"><div class="day-num">0</div><div class="day-lab">前日</div></div>
+    <div class="day-card c0">
+      <div class="hd"><div class="day-date"><span class="emoji">🇯🇵</span> 1月19日（火）前日</div>
+        <div class="day-title"><span class="emoji">🏨</span> 成田に前泊でゆったり準備！</div></div>
+      <ul>
+        <li>相模大野駅 → 新宿 → 成田空港（所要約2時間）</li>
+        <li>東横INN成田空港（新館）チェックイン</li>
+        <li>館内コンビニ（ローソン）で翌朝の飲み物・お菓子を調達</li>
+        <li>朝食無料プランで翌朝しっかり食べて出発！</li>
+        <li>早めに就寝して体力温存 <span class="emoji">😴</span> いよいよ明日はグアムへ！</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-mark"><div class="day-num">1</div><div class="day-lab">DAY</div></div>
+    <div class="day-card c1">
+      <div class="hd"><div class="day-date"><span class="emoji">🇬🇺</span> 1月20日（水）</div>
+        <div class="day-title"><span class="emoji">🛫</span> 出発！グアムへ Let's Go！</div></div>
+      <ul>
+        <li>7:30 ホテルで朝食 → 8:00 無料シャトルバスで成田空港へ</li>
+        <li>8:15 成田空港 第2ターミナル着・チェックイン＆手荷物預け</li>
+        <li>保安検査・出国審査をゆっくり済ませる（免税店も楽しもう！）</li>
+        <li>10:00 JAL JL941便 成田出発！（飛行時間 約3時間半）</li>
+        <li>14:35 グアム国際空港 到着！</li>
+        <li>15:30 ザツバキ タワー チェックイン<span class="tag b">全室オーシャンビュー</span></li>
+        <li>16:30 バルコニーから海と夕日を眺めながら少し休憩・荷ほどき</li>
+        <li>17:30〜21:00 チャモロビレッジ・ナイトマーケット<span class="tag gold">水曜限定！到着日の夜に</span></li>
+        <li>チャモロ料理・屋台・ダンス・生演奏を満喫 夕食は屋台グルメで！</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-mark"><div class="day-num">2</div><div class="day-lab">DAY</div></div>
+    <div class="day-card c2">
+      <div class="hd"><div class="day-date"><span class="emoji">🇬🇺</span> 1月21日（木）</div>
+        <div class="day-title"><span class="emoji">🏖️</span> 海アドベンチャー＆ビーチデー</div></div>
+      <ul>
+        <li>7:30 ホテルのバルコニーで朝食 目の前に広がる青い海を眺めながら</li>
+        <li>9:00〜13:00 イルカウォッチング＆ウミガメシュノーケリングツアー<span class="tag">超おすすめ！</span></li>
+        <li>日本語ガイド付き・ホテル送迎あり・器具レンタル込みで安心（4人 約3〜4万円）</li>
+        <li>13:30 タモンビーチ周辺でランチ（軽食・地元カフェ）</li>
+        <li>14:30〜16:30 タモンビーチで自由時間 砂遊び・波打ち際でのんびり</li>
+        <li>17:30 ホテルプールでひと泳ぎ or バルコニーで休憩</li>
+        <li>18:30 夕食：ホテル内「TSUBAKI PRIME」で豪華ステーキ＆シーフード<span class="tag gold">贅沢ディナー！</span></li>
+      </ul>
+    </div>
+  </div>
+</div></section>
+
+<!-- ============ PAGE 3 : SCHEDULE 2 ============ -->
+<section class="page"><div class="pad">
+  <div class="sec-h"><span class="num">1</span><span class="emoji">🗓️</span> 旅のスケジュール（つづき）</div>
+
+  <div class="day">
+    <div class="day-mark"><div class="day-num">3</div><div class="day-lab">DAY</div></div>
+    <div class="day-card c3">
+      <div class="hd"><div class="day-date"><span class="emoji">🇬🇺</span> 1月22日（金）</div>
+        <div class="day-title"><span class="emoji">🌴</span> ジャングルアドベンチャー＆ショッピングデー</div></div>
+      <ul>
+        <li>8:00 ホテル朝食</li>
+        <li>9:30〜12:30 タロフォフォの滝公園へ<span class="tag g">子どもも大喜び</span></li>
+        <li>ケーブルカーで滝へ・ジップライン体験・ワニ見学など大自然を満喫！（4人 約2〜3万円）</li>
+        <li>12:30 マイクロネシアモールでランチ（フードコートで気軽に）</li>
+        <li>14:00〜16:30 DFSギャラリアでショッピング＆お土産チェック</li>
+        <li>17:30 ホテルプールでひと泳ぎ</li>
+        <li>19:00 夕食：本格チャモロ料理レストランで島の味を堪能</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-mark"><div class="day-num">4</div><div class="day-lab">DAY</div></div>
+    <div class="day-card c4">
+      <div class="hd"><div class="day-date"><span class="emoji">🇬🇺</span> 1月23日（土）</div>
+        <div class="day-title"><span class="emoji">📸</span> 絶景観光＆サンセットクルーズデー</div></div>
+      <ul>
+        <li>8:00 ホテルのバルコニーでゆっくり朝食 <span class="emoji">🌅</span> 最高のオーシャンビューを満喫</li>
+        <li>9:30〜11:00 恋人岬で絶景＆家族写真撮影！</li>
+        <li>11:30 ラッテストーン公園（グアムの歴史・文化を学ぼう）</li>
+        <li>12:30 タモン地区の人気レストランでランチ</li>
+        <li>14:00〜17:00 ザツバキ タワーのプールでまったりリゾート気分</li>
+        <li>17:30〜19:00 サンセットクルーズ<span class="tag">感動必至！</span>（4人 約3〜4万円）</li>
+        <li>20:00 最終夜は豪華ディナー！高級ステーキ or シーフードで締め <span class="emoji">🥂</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="day">
+    <div class="day-mark"><div class="day-num">5</div><div class="day-lab">DAY</div></div>
+    <div class="day-card c5">
+      <div class="hd"><div class="day-date"><span class="emoji">🇯🇵</span> 1月24日（日）</div>
+        <div class="day-title"><span class="emoji">🧳</span> 帰国日 〜最後のグアムを満喫！〜</div></div>
+      <ul>
+        <li>8:00 ホテルで朝食 荷物をまとめる・最後のバルコニービューを目に焼きつけて</li>
+        <li>11:00 ザツバキ タワー チェックアウト（フロントに荷物を無料で預ける！）</li>
+        <li>11:30〜13:00 身軽にDFS or タモン地区で最後のお土産＆ランチ</li>
+        <li>13:00 ホテルに戻って荷物をピックアップ</li>
+        <li>13:30頃 空港へ移動（出発の約3時間前には空港へ！）</li>
+        <li>16:35 JL942便 グアム出発！（飛行時間 約3時間半）</li>
+        <li>19:25 成田空港 到着！入国審査・荷物受け取り</li>
+        <li>20:15頃 成田エクスプレスで新宿へ（約80分・座席指定必須！）</li>
+        <li>21:35頃 新宿着 → 小田急で相模大野へ</li>
+        <li>22:15頃 相模大野 到着！おかえり〜！家族4人最高の旅でした <span class="emoji">🎉</span></li>
+      </ul>
+    </div>
+  </div>
+</div></section>
+
+<!-- ============ PAGE 4 : BUDGET ============ -->
+<section class="page"><div class="pad">
+  <div class="sec-h"><span class="num">2</span><span class="emoji">💰</span> 予算プラン（4人合計）</div>
+
+  <div class="budget-hero">
+    <div class="big">¥1,410,000</div>
+    <div class="sub">総予算目安（JTB実勢価格ベース・ザツバキ タワー 1部屋4人）</div>
+  </div>
+
+  <div class="bgrid">
+    <div class="bcard"><div class="ic emoji">✈️</div><div class="t">JTBパッケージ（JAL＋ツバキ／4泊・4人・燃油込）</div><div class="v">¥901,700</div></div>
+    <div class="bcard"><div class="ic emoji">🛂</div><div class="t">空港諸税ほか（4人）</div><div class="v">〜¥50,000</div></div>
+    <div class="bcard"><div class="ic emoji">🍽️</div><div class="t">食事（朝食以外・5日間）</div><div class="v">〜¥150,000</div></div>
+    <div class="bcard"><div class="ic emoji">🌊</div><div class="t">アクティビティ</div><div class="v">〜¥110,000</div></div>
+    <div class="bcard"><div class="ic emoji">🛍️</div><div class="t">お土産・買物</div><div class="v">〜¥100,000</div></div>
+    <div class="bcard"><div class="ic emoji">🚌</div><div class="t">前泊・交通・諸費用</div><div class="v">〜¥100,000</div></div>
+  </div>
+
+  <p class="fineprint">
+    ※ JTB「ルックJTB／JTBMySTYLE」ザツバキ タワー（カメリアクラブルーム オーシャンビュー・ラウンジアクセス込）／
+    JAL直行便・成田発／おとな3名＋こども1名・1部屋の実勢価格（2026年6月時点）。
+    901,700円は6/24までのタイムセール価格・燃油込／空港諸税別。料金は時期・予約状況により変動します。
+  </p>
+</div></section>
+
+<!-- ============ PAGE 5 : CHECKLIST ============ -->
+<section class="page"><div class="pad">
+  <div class="sec-h"><span class="num">3</span><span class="emoji">📋</span> 出発前チェックリスト</div>
+
+  <div class="passport">
+    <h3><span class="emoji">📕</span> パスポートをまだ持っていない場合は早めに申請を！</h3>
+    <div style="font-size:10px">2027年1月出発まで約1年！出発時、美緒さんは <b>12歳（中1）</b>、友也くんは <b>10歳（小4）</b> になってる。</div>
+    <div class="hl"><span class="emoji">💡</span> <b>2026年7月1日から手数料が大きく値下げ！</b> 急がなければ <b>7月以降にオンライン申請（マイナポータル）</b> するのが一番お得。
+      （※制度開始直後は発行に約1か月かかる場合があるので、夏〜秋のうちに申請を）</div>
+    <ul>
+      <li>申請先：お住まいの市区町村の窓口（相模原市役所 等）、またはマイナポータルでオンライン申請</li>
+      <li>必要書類：顔写真・本人確認書類・申請書・手数料（オンラインなら戸籍謄本は原則不要）</li>
+      <li>未成年（子ども）のパスポートは <b>親が同伴で申請</b></li>
+      <li>【〜2026年6月30日 申請の料金】大人10年 各¥16,000／美緒さん5年 ¥11,000／友也くん5年 ¥6,000 → <b>4人合計 ¥49,000</b></li>
+      <li>【2026年7月1日〜 オンライン申請】大人10年 各¥8,900／美緒さん5年 ¥4,400／友也くん5年 ¥4,400 → <b>4人合計 約¥26,600</b></li>
+      <li class="save"><span class="emoji">👉</span> 7月以降に申請すれば約¥22,000おトク！</li>
+    </ul>
+  </div>
+
+  <div class="cols">
+    <div class="col red">
+      <h4><span class="emoji">🔴</span> 今すぐやること</h4>
+      <ul>
+        <li>パスポート申請（全員分）</li>
+        <li>航空券の予約（早いほどお得）</li>
+        <li>ホテルの予約</li>
+        <li>海外旅行保険の加入</li>
+        <li>クレジットカード・現金の準備</li>
+      </ul>
+    </div>
+    <div class="col blue">
+      <h4><span class="emoji">🔵</span> 出発1週間前まで</h4>
+      <ul>
+        <li>スーツケース・旅行バッグの準備</li>
+        <li>日焼け止め・虫除けスプレー</li>
+        <li>水着・ラッシュガードの購入</li>
+        <li>常備薬・酔い止めの用意</li>
+        <li>海外SIM or Wi-Fiルーターの手配</li>
+        <li>ドル（USD）両替</li>
+      </ul>
+    </div>
+    <div class="col green">
+      <h4><span class="emoji">🟢</span> 持ち物リスト</h4>
+      <ul>
+        <li>パスポート（全員分）</li>
+        <li>航空券・eチケット</li>
+        <li>ホテルバウチャー</li>
+        <li>海外保険証書</li>
+        <li>クレジットカード</li>
+        <li>充電器・変換プラグ</li>
+        <li>シュノーケルセット</li>
+      </ul>
+    </div>
+  </div>
+</div></section>
+
+<!-- ============ PAGE 6 : TIPS ============ -->
+<section class="page"><div class="pad">
+  <div class="sec-h"><span class="num">4</span><span class="emoji">💡</span> グアム旅行のコツ</div>
+
+  <div class="tips">
+    <div class="tip"><div class="ic emoji">🌤️</div><div class="t">1月のグアムの気候</div>
+      <p>平均27〜30℃。スコールあり。日本より暖かく海水浴OK！日焼け対策は必須。</p></div>
+    <div class="tip"><div class="ic emoji">💵</div><div class="t">チップ文化</div>
+      <p>レストランや観光地でチップが必要。目安は食事代の10〜15%。小銭をUSDで用意しよう。</p></div>
+    <div class="tip"><div class="ic emoji">📶</div><div class="t">ネット環境</div>
+      <p>海外SIMか現地Wi-Fiルーターを準備。Googleマップが大活躍。ホテルWi-Fiも活用して。</p></div>
+    <div class="tip"><div class="ic emoji">🚌</div><div class="t">移動手段</div>
+      <p>タモン地区はシャトルバスが便利。レンタカーもあり。観光ツアーの送迎バス利用が初心者に安心。</p></div>
+    <div class="tip"><div class="ic emoji">🗣️</div><div class="t">言語について</div>
+      <p>日本語が通じる場所がたくさん！観光地・ホテル・DFSは日本語スタッフあり。安心して。</p></div>
+    <div class="tip"><div class="ic emoji">🏥</div><div class="t">健康・安全</div>
+      <p>海外旅行保険は必ず加入。水は市販のボトル水を。子どもは特に日焼けと水分補給に注意。</p></div>
+  </div>
+
+  <div class="endcard">
+    <div class="big"><span class="emoji">✨</span> Have a Wonderful Trip! <span class="emoji">✨</span></div>
+    <p>家族4人の最初の海外旅行、最高の思い出になりますように <span class="emoji">🌺</span></p>
+    <div class="meta">GUAM 2027 &nbsp;|&nbsp; 1.19 前泊 → 1.20 出発 → 1.24 帰宅 &nbsp;|&nbsp; Family of 4</div>
+  </div>
+</div></section>
+
+</body>
+</html>
